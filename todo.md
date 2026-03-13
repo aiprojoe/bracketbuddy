@@ -79,3 +79,16 @@
 - [x] Wire onPickByVoice callback in Bracket.tsx to call the existing pick handler
 - [x] Show visual confirmation toast when voice pick updates bracket
 - [x] Run tests and verify 0 TypeScript errors (18/18 passing)
+
+## Live Score Feed (ESPN Unofficial API)
+- [x] Research and validate ESPN API endpoints for NCAA tournament scores
+- [x] Add gameResults table to DB schema (espnGameId, espnStatus, isScored, team ESPN IDs)
+- [x] Add tournamentConfig table (isLocked, isSyncEnabled, lastSyncAt, lastSyncStatus)
+- [x] Push schema migration
+- [x] Add ESPN sync server function espnSync.ts (fetch, team matching, pick scoring, bracket totals)
+- [x] Add auto-scoring engine (compare game results to user picks, award points)
+- [x] Add tournament tRPC router (liveScores, config, syncNow, setLocked, setResult)
+- [x] Add admin panel page (/admin) for tournament management (lock brackets, trigger sync, view results)
+- [x] Add LiveScoresBanner component (scrolling ticker on bracket page)
+- [x] Wire LiveScoresBanner into Bracket page
+- [x] Write vitest tests for tournament procedures (24/24 passing, 0 TypeScript errors)

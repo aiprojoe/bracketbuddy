@@ -163,7 +163,7 @@ export const challengeParticipants = mysqlTable("challengeParticipants", {
 
 export type ChallengeParticipant = typeof challengeParticipants.$inferSelect;
 
-// Tournament game results (admin updates these)
+// Tournament game results — synced from ESPN API
 export const gameResults = mysqlTable("gameResults", {
   id: int("id").autoincrement().primaryKey(),
   year: int("year").default(2026).notNull(),
@@ -176,14 +176,38 @@ export const gameResults = mysqlTable("gameResults", {
     "finalfour",
     "championship",
   ]).notNull(),
-  matchupId: varchar("matchupId", { length: 50 }).notNull(),
+  matchupId: varchar("matchupId", { length: 50 }).notNull(), // e.g. "East-round64-0"
+  espnGameId: varchar("espnGameId", { length: 20 }).unique(), // ESPN event ID for dedup
+  espnStatus: varchar("espnStatus", { length: 30 }).default("STATUS_SCHEDULED"), // STATUS_FINAL, STATUS_IN_PROGRESS, etc.
   team1Id: int("team1Id").notNull(),
   team2Id: int("team2Id").notNull(),
-  winnerId: int("winnerId"),
+  team1EspnId: varchar("team1EspnId", { length: 20 }), // ESPN team ID for matching
+  team2EspnId: varchar("team2EspnId", { length: 20 }),
+  winnerId: int("winnerId"),        // our DB team id of winner
   team1Score: int("team1Score"),
   team2Score: int("team2Score"),
   isComplete: boolean("isComplete").default(false).notNull(),
+  isScored: boolean("isScored").default(false).notNull(), // true after bracket picks have been scored
   playedAt: timestamp("playedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
+
+export type GameResult = typeof gameResults.$inferSelect;
+
+// Tournament configuration — controls sync and lock state
+export const tournamentConfig = mysqlTable("tournamentConfig", {
+  id: int("id").autoincrement().primaryKey(),
+  year: int("year").default(2026).notNull().unique(),
+  isLocked: boolean("isLocked").default(false).notNull(), // true = no more bracket edits
+  isSyncEnabled: boolean("isSyncEnabled").default(true).notNull(),
+  lastSyncAt: timestamp("lastSyncAt"),
+  lastSyncStatus: varchar("lastSyncStatus", { length: 200 }),
+  gamesFound: int("gamesFound").default(0).notNull(),
+  gamesCompleted: int("gamesCompleted").default(0).notNull(),
+  picksScored: int("picksScored").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TournamentConfig = typeof tournamentConfig.$inferSelect;

@@ -28,8 +28,9 @@ import {
   upsertPick,
 } from "./db";
 import { getDb } from "./db";
-import { brackets, users } from "../drizzle/schema";
-import { eq, sql } from "drizzle-orm";
+import { brackets, users, gameResults, tournamentConfig } from "../drizzle/schema";
+import { eq, sql, desc } from "drizzle-orm";
+import { syncEspnScores, getLiveScores, getTournamentConfig } from "./espnSync";
 
 // ─── Seed on startup ──────────────────────────────────────────────────────────
 seedTeamsIfEmpty().catch(console.error);
@@ -412,6 +413,100 @@ IMPORTANT: Only output JSON. No other text.`,
         return {
           response: response.choices[0]?.message?.content ?? "Let's go! Time to bust some brackets! 🏀",
         };
+      }),
+  }),
+
+  // ─── Tournament / Live Scores ─────────────────────────────────────────────
+  tournament: router({
+    // Get live game results (public)
+    liveScores: publicProcedure.query(async () => {
+      return getLiveScores(2026);
+    }),
+
+    // Get tournament config/status (public)
+    config: publicProcedure.query(async () => {
+      return getTournamentConfig(2026);
+    }),
+
+    // Admin: trigger ESPN sync manually
+    syncNow: protectedProcedure.mutation(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
+      }
+      const result = await syncEspnScores(2026);
+      return result;
+    }),
+
+    // Admin: lock/unlock brackets
+    setLocked: protectedProcedure
+      .input(z.object({ locked: z.boolean() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
+        }
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const existing = await db.select({ id: tournamentConfig.id }).from(tournamentConfig).where(eq(tournamentConfig.year, 2026)).limit(1);
+        if (existing.length > 0) {
+          await db.update(tournamentConfig).set({ isLocked: input.locked }).where(eq(tournamentConfig.year, 2026));
+        } else {
+          await db.insert(tournamentConfig).values({ year: 2026, isLocked: input.locked });
+        }
+        // Also lock/unlock all brackets
+        await db.update(brackets).set({ isLocked: input.locked }).where(eq(brackets.year, 2026));
+        return { success: true, locked: input.locked };
+      }),
+
+    // Admin: manually set a game result (fallback if ESPN API doesn't have it)
+    setResult: protectedProcedure
+      .input(z.object({
+        matchupId: z.string(),
+        round: z.enum(["firstfour","round64","round32","sweet16","elite8","finalfour","championship"]),
+        team1Id: z.number(),
+        team2Id: z.number(),
+        winnerId: z.number(),
+        team1Score: z.number().optional(),
+        team2Score: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
+        }
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        const existing = await db.select({ id: gameResults.id, isScored: gameResults.isScored })
+          .from(gameResults)
+          .where(eq(gameResults.matchupId, input.matchupId))
+          .limit(1);
+
+        if (existing.length > 0) {
+          await db.update(gameResults).set({
+            winnerId: input.winnerId,
+            team1Score: input.team1Score,
+            team2Score: input.team2Score,
+            isComplete: true,
+            espnStatus: "STATUS_FINAL",
+            playedAt: new Date(),
+          }).where(eq(gameResults.matchupId, input.matchupId));
+        } else {
+          await db.insert(gameResults).values({
+            year: 2026,
+            round: input.round,
+            matchupId: input.matchupId,
+            team1Id: input.team1Id,
+            team2Id: input.team2Id,
+            winnerId: input.winnerId,
+            team1Score: input.team1Score,
+            team2Score: input.team2Score,
+            isComplete: true,
+            isScored: false,
+            espnStatus: "STATUS_FINAL",
+            playedAt: new Date(),
+          });
+        }
+
+        return { success: true };
       }),
   }),
 });

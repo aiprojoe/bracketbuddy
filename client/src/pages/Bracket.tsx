@@ -9,6 +9,7 @@ import { Mic, Zap, Share2, RotateCcw, ChevronRight, Trophy, Sparkles, Swords } f
 import { type TeamData, SEED_PAIRS_R64, type Region, type Round } from "../../../shared/bracketData";
 import VoiceAssistant from "@/components/VoiceAssistant";
 import AIAnalysis from "@/components/AIAnalysis";
+import LiveScoresBanner from "@/components/LiveScoresBanner";
 import { Link } from "wouter";
 
 type PicksMap = Record<string, number>; // matchupId -> pickedTeamId
@@ -308,6 +309,7 @@ export default function Bracket() {
   return (
     <div className="min-h-screen bg-[oklch(0.1_0.01_260)] text-white">
       <NavBar />
+      <LiveScoresBanner />
 
       {/* Header */}
       <div className="border-b border-white/10 bg-[oklch(0.12_0.01_260)]">

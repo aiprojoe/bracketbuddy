@@ -214,3 +214,109 @@ describe("challenge.getH2H", () => {
     expect(result).toBeNull();
   });
 });
+
+// ─── Tournament / ESPN Sync Tests ─────────────────────────────────────────────
+
+// Mock the espnSync module
+vi.mock("./espnSync", () => ({
+  syncEspnScores: vi.fn().mockResolvedValue({
+    gamesFound: 16,
+    gamesCompleted: 8,
+    gamesUpdated: 4,
+    picksScored: 120,
+    errors: [],
+  }),
+  getLiveScores: vi.fn().mockResolvedValue([
+    {
+      id: 1,
+      matchupId: "East-round64-0",
+      round: "round64",
+      espnStatus: "STATUS_FINAL",
+      isComplete: true,
+      team1Id: 1,
+      team2Id: 2,
+      winnerId: 1,
+      team1Score: 78,
+      team2Score: 65,
+      playedAt: new Date("2026-03-20T21:00:00Z"),
+    },
+  ]),
+  getTournamentConfig: vi.fn().mockResolvedValue({
+    id: 1,
+    year: 2026,
+    isLocked: false,
+    isSyncEnabled: true,
+    lastSyncAt: new Date(),
+    lastSyncStatus: "OK",
+    gamesFound: 16,
+    gamesCompleted: 8,
+    picksScored: 120,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }),
+}));
+
+describe("tournament.liveScores", () => {
+  it("returns live scores publicly", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    const scores = await caller.tournament.liveScores();
+    expect(Array.isArray(scores)).toBe(true);
+    expect(scores.length).toBeGreaterThan(0);
+    expect(scores[0]).toHaveProperty("matchupId");
+    expect(scores[0]).toHaveProperty("round");
+    expect(scores[0]).toHaveProperty("isComplete");
+  });
+});
+
+describe("tournament.config", () => {
+  it("returns tournament config publicly", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    const config = await caller.tournament.config();
+    expect(config).not.toBeNull();
+    expect(config).toHaveProperty("isLocked");
+    expect(config).toHaveProperty("gamesFound");
+    expect(config).toHaveProperty("lastSyncStatus");
+  });
+});
+
+describe("tournament.syncNow", () => {
+  it("requires authentication", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    await expect(caller.tournament.syncNow()).rejects.toThrow();
+  });
+
+  it("requires admin role", async () => {
+    const caller = appRouter.createCaller(createAuthContext(1)); // role = "user"
+    await expect(caller.tournament.syncNow()).rejects.toThrow("Admin only");
+  });
+
+  it("succeeds for admin user", async () => {
+    const adminCtx: TrpcContext = {
+      user: {
+        id: 99,
+        openId: "admin-user",
+        email: "admin@example.com",
+        name: "Admin User",
+        loginMethod: "manus",
+        role: "admin",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastSignedIn: new Date(),
+      },
+      req: { protocol: "https", headers: {} } as TrpcContext["req"],
+      res: { clearCookie: vi.fn() } as unknown as TrpcContext["res"],
+    };
+    const caller = appRouter.createCaller(adminCtx);
+    const result = await caller.tournament.syncNow();
+    expect(result).toHaveProperty("gamesFound");
+    expect(result).toHaveProperty("picksScored");
+    expect(result.errors).toHaveLength(0);
+  });
+});
+
+describe("tournament.setLocked", () => {
+  it("requires admin role", async () => {
+    const caller = appRouter.createCaller(createAuthContext(1));
+    await expect(caller.tournament.setLocked({ locked: true })).rejects.toThrow("Admin only");
+  });
+});
