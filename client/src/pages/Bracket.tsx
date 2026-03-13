@@ -5,7 +5,7 @@ import NavBar from "@/components/NavBar";
 import { trpc } from "@/lib/trpc";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
-import { Mic, MicOff, Zap, Share2, RotateCcw, ChevronRight, Trophy, Sparkles, Swords } from "lucide-react";
+import { Mic, Zap, Share2, RotateCcw, ChevronRight, Trophy, Sparkles, Swords } from "lucide-react";
 import { type TeamData, SEED_PAIRS_R64, type Region, type Round } from "../../../shared/bracketData";
 import VoiceAssistant from "@/components/VoiceAssistant";
 import AIAnalysis from "@/components/AIAnalysis";
@@ -113,7 +113,6 @@ export default function Bracket() {
   const { user, isAuthenticated, loading } = useAuth();
   const [picks, setPicks] = useState<PicksMap>({});
   const [bracketId, setBracketId] = useState<number | null>(null);
-  const [showVoice, setShowVoice] = useState(false);
   const [showAI, setShowAI] = useState(false);
   const [activeRegion, setActiveRegion] = useState<Region>("East");
   const [totalPicks, setTotalPicks] = useState(0);
@@ -345,16 +344,13 @@ export default function Bracket() {
               </Button>
 
               <Button
-                onClick={() => setShowVoice(!showVoice)}
+                onClick={() => {}}
                 size="sm"
-                className={`font-bold ${
-                  showVoice
-                    ? "bg-[oklch(0.65_0.22_35)] text-white voice-active"
-                    : "bg-[oklch(0.65_0.22_35/0.2)] text-[oklch(0.65_0.22_35)] border border-[oklch(0.65_0.22_35/0.4)] hover:bg-[oklch(0.65_0.22_35/0.3)]"
-                }`}
+                title="Voice AI — click the mic button at bottom-left"
+                className="bg-[oklch(0.65_0.22_35/0.2)] text-[oklch(0.65_0.22_35)] border border-[oklch(0.65_0.22_35/0.4)] hover:bg-[oklch(0.65_0.22_35/0.3)] font-bold"
               >
-                {showVoice ? <MicOff size={14} className="mr-1" /> : <Mic size={14} className="mr-1" />}
-                {showVoice ? "Stop Voice" : "Voice AI"}
+                <Mic size={14} className="mr-1" />
+                Voice AI
               </Button>
             </div>
           </div>
@@ -374,14 +370,53 @@ export default function Bracket() {
         </div>
       )}
 
-      {/* Voice Assistant */}
-      {showVoice && (
-        <div className="border-b border-white/10 bg-[oklch(0.12_0.01_260)]">
-          <div className="max-w-full mx-auto px-4 py-4">
-            <VoiceAssistant />
-          </div>
-        </div>
-      )}
+      {/* Voice Assistant — floating, always available on bracket page */}
+      <VoiceAssistant
+        onPickByVoice={(teamId, teamName) => {
+          // Find which matchup this team is currently in and pick them
+          const allRegions: Region[] = ["East", "West", "South", "Midwest"];
+          const allRounds: Round[] = ["round64", "round32", "sweet16", "elite8"];
+          let picked = false;
+
+          // Search all regions and rounds for an active matchup containing this team
+          for (const region of allRegions) {
+            for (const round of allRounds) {
+              const matchups = getMatchupsForRound(region, round);
+              for (const m of matchups) {
+                if (!m.team1 || !m.team2) continue;
+                if (m.team1.id === teamId || m.team2.id === teamId) {
+                  // Only pick if this matchup hasn't been decided yet OR we're changing the pick
+                  const t1 = m.team1;
+                  const t2 = m.team2;
+                  handlePick(m.id, teamId, round, t1.id, t2.id, t1.seed, t2.seed);
+                  setActiveRegion(region); // Navigate to the region
+                  picked = true;
+                  break;
+                }
+              }
+              if (picked) break;
+            }
+            if (picked) break;
+          }
+
+          // Also check Final Four
+          if (!picked) {
+            const ffMatchups = getFinalFourMatchups();
+            for (const m of ffMatchups) {
+              if (!m.team1 || !m.team2) continue;
+              if (m.team1.id === teamId || m.team2.id === teamId) {
+                handlePick(m.id, teamId, "finalfour", m.team1.id, m.team2.id, m.team1.seed, m.team2.seed);
+                picked = true;
+                break;
+              }
+            }
+          }
+
+          if (!picked) {
+            toast.info(`${teamName} isn't in an active matchup yet — make earlier round picks first!`);
+          }
+        }}
+      />
 
       {/* Region Tabs */}
       <div className="border-b border-white/10 bg-[oklch(0.12_0.01_260)] sticky top-16 z-40">

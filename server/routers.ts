@@ -330,6 +330,65 @@ export const appRouter = router({
         };
       }),
 
+    // Parse voice speech to detect a bracket pick intent
+    // Returns { isPick: true, teamName, teamId, confirmMessage } or { isPick: false, response }
+    parseVoicePick: publicProcedure
+      .input(z.object({ speech: z.string().min(1).max(500) }))
+      .mutation(async ({ input }) => {
+        const teams = await getAllTeams();
+        const teamList = teams.map((t) => ({
+          id: t.id,
+          name: t.name,
+          shortName: t.shortName,
+          seed: t.seed,
+          region: t.region,
+        }));
+        const teamListStr = teamList
+          .map((t) => `id:${t.id} "${t.shortName}" (${t.name}, seed ${t.seed}, ${t.region})`)
+          .join("\n");
+
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: `You are a bracket pick parser for March Madness. Your ONLY job is to detect if the user is trying to pick a team to advance in their bracket.
+
+Available teams:\n${teamListStr}\n
+If the user says something like "I pick Duke", "Duke wins", "take Duke", "Duke over Kentucky", "go with Duke", "Duke all the way" — that is a PICK.
+If they are asking a question or requesting analysis — that is NOT a pick.
+
+Respond with ONLY valid JSON in this exact format:
+- If it IS a pick: {"isPick": true, "teamId": <number>, "teamName": "<shortName>", "confirmMessage": "<fun 1-sentence confirmation with emoji>"}
+- If it is NOT a pick: {"isPick": false, "response": "<helpful AI answer under 100 words with emojis>"}
+
+IMPORTANT: Only output JSON. No other text.`,
+            },
+            { role: "user", content: input.speech },
+          ],
+          response_format: { type: "json_object" } as any,
+        });
+
+        const rawContent = response.choices[0]?.message?.content ?? "{}";
+        const raw = typeof rawContent === "string" ? rawContent : "{}";
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed.isPick && parsed.teamId) {
+            // Validate teamId exists
+            const team = teamList.find((t) => t.id === parsed.teamId);
+            if (!team) return { isPick: false as const, response: "Hmm, I couldn't find that team. Try saying the team name more clearly! 🏀" };
+            return {
+              isPick: true as const,
+              teamId: team.id,
+              teamName: team.shortName,
+              confirmMessage: parsed.confirmMessage ?? `🏀 ${team.shortName} advances! Great pick!`,
+            };
+          }
+          return { isPick: false as const, response: parsed.response ?? "Let's go! 🏀" };
+        } catch {
+          return { isPick: false as const, response: "I didn't catch that — try saying a team name like 'I pick Duke'! 🏀" };
+        }
+      }),
+
     // Free text/voice chat — no VAPI, uses built-in LLM
     chat: publicProcedure
       .input(z.object({ message: z.string().min(1).max(500) }))

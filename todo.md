@@ -72,3 +72,10 @@
 - [x] Add browser compatibility check (Chrome/Edge/Android supported; Safari fallback message)
 - [x] Update Bracket.tsx to use new VoiceAssistant props if changed (no props needed)
 - [x] Run tests and verify 0 TypeScript errors (18/18 passing)
+
+## Voice-to-Pick Flow Fix
+- [x] Add ai.parseVoicePick tRPC procedure: extract team name from speech, fuzzy-match to bracket teams, return teamId + confirmation message
+- [x] Update VoiceAssistant to accept onPickByVoice prop and detect pick intent in AI response
+- [x] Wire onPickByVoice callback in Bracket.tsx to call the existing pick handler
+- [x] Show visual confirmation toast when voice pick updates bracket
+- [x] Run tests and verify 0 TypeScript errors (18/18 passing)

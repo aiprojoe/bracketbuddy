@@ -3,16 +3,18 @@
  *
  * Architecture:
  * 1. Browser's built-in SpeechRecognition API handles voice-to-text (zero cost)
- * 2. Transcript sent to our free built-in LLM for AI analysis
- * 3. Response shown as text (no TTS cost)
- * 4. Text chat fallback for unsupported browsers
- * 5. Zero external API dependencies, zero per-minute costs
+ * 2. Transcript sent to ai.parseVoicePick — LLM detects if it's a bracket pick
+ * 3. If pick detected: calls onPickByVoice(teamId) to update bracket + shows confirmation
+ * 4. If not a pick: falls back to ai.chat for general AI advice
+ * 5. Text chat fallback for unsupported browsers
+ * 6. Zero external API dependencies, zero per-minute costs
  */
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
-import { Mic, MicOff, X, Loader2, AlertCircle, MessageSquare } from "lucide-react";
+import { Mic, MicOff, X, Loader2, AlertCircle, MessageSquare, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 // Web Speech API types (not in all TS lib versions)
 interface SpeechRecognitionResultItem {
@@ -53,18 +55,31 @@ declare global {
 interface Message {
   role: "user" | "assistant";
   text: string;
+  isPick?: boolean;
 }
 
 type AssistantState = "idle" | "listening" | "processing";
 
-const EXAMPLE_PROMPTS = [
+const EXAMPLE_VOICE_PROMPTS = [
+  "I pick Duke over Kentucky",
+  "Take Arizona to win it all",
+  "Give me your best upset pick",
+  "Who are the Cinderella teams?",
+];
+
+const EXAMPLE_TEXT_PROMPTS = [
   "Top 3 upset picks 💥",
   "Cinderella teams? 🪄",
   "Best Final Four picks 🏆",
   "Who wins it all? 👑",
 ];
 
-export default function VoiceAssistant() {
+interface VoiceAssistantProps {
+  /** Called when the AI detects a bracket pick in the user's speech. Pass the teamId to update the bracket. */
+  onPickByVoice?: (teamId: number, teamName: string) => void;
+}
+
+export default function VoiceAssistant({ onPickByVoice }: VoiceAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<"voice" | "text">("voice");
   const [state, setState] = useState<AssistantState>("idle");
@@ -76,6 +91,46 @@ export default function VoiceAssistant() {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Mutation: parse voice for pick intent first
+  const parsePickMutation = trpc.ai.parseVoicePick.useMutation({
+    onSuccess: (data) => {
+      if (data.isPick) {
+        // It's a bracket pick — update the bracket!
+        const confirmMsg = data.confirmMessage;
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", text: confirmMsg, isPick: true },
+        ]);
+        setState("idle");
+        setLiveTranscript("");
+        // Fire the callback to update the bracket
+        if (onPickByVoice) {
+          onPickByVoice(data.teamId, data.teamName);
+        }
+        toast.success(`🏀 ${data.teamName} picked by voice!`, {
+          description: confirmMsg,
+          duration: 4000,
+        });
+      } else {
+        // Not a pick — show AI advice
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", text: data.response },
+        ]);
+        setState("idle");
+        setLiveTranscript("");
+      }
+    },
+    onError: () => {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", text: "Sorry, couldn't process that. Try again or use text chat!" },
+      ]);
+      setState("idle");
+    },
+  });
+
+  // Mutation: text chat (general AI advice, no pick detection)
   const chatMutation = trpc.ai.chat.useMutation({
     onSuccess: (data) => {
       const text = typeof data.response === "string" ? data.response : String(data.response);
@@ -84,7 +139,10 @@ export default function VoiceAssistant() {
       setLiveTranscript("");
     },
     onError: () => {
-      setMessages((prev) => [...prev, { role: "assistant", text: "Sorry, couldn't get AI analysis right now. Try again!" }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", text: "Sorry, couldn't get AI analysis right now. Try again!" },
+      ]);
       setState("idle");
     },
   });
@@ -105,7 +163,16 @@ export default function VoiceAssistant() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const sendToAI = useCallback((text: string) => {
+  // Voice input → parse for pick intent first
+  const sendVoiceToAI = useCallback((text: string) => {
+    if (!text.trim()) { setState("idle"); return; }
+    setMessages((prev) => [...prev, { role: "user", text }]);
+    setState("processing");
+    parsePickMutation.mutate({ speech: text });
+  }, [parsePickMutation]);
+
+  // Text input → general chat (no pick detection for text, keep it conversational)
+  const sendTextToAI = useCallback((text: string) => {
     if (!text.trim()) { setState("idle"); return; }
     setMessages((prev) => [...prev, { role: "user", text }]);
     setState("processing");
@@ -132,7 +199,7 @@ export default function VoiceAssistant() {
       setLiveTranscript(text);
       if (latest.isFinal) {
         recognition.stop();
-        sendToAI(text);
+        sendVoiceToAI(text);
       }
     };
 
@@ -165,16 +232,16 @@ export default function VoiceAssistant() {
     } catch {
       setState("idle");
     }
-  }, [sendToAI, state]);
+  }, [sendVoiceToAI, state]);
 
   const stopListening = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     try { recognitionRef.current?.stop(); } catch {}
     if (state === "listening") {
-      if (liveTranscript) sendToAI(liveTranscript);
+      if (liveTranscript) sendVoiceToAI(liveTranscript);
       else setState("idle");
     }
-  }, [state, liveTranscript, sendToAI]);
+  }, [state, liveTranscript, sendVoiceToAI]);
 
   const handleMicClick = () => {
     if (state === "listening") stopListening();
@@ -184,7 +251,7 @@ export default function VoiceAssistant() {
   const handleTextSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!textInput.trim() || state === "processing") return;
-    sendToAI(textInput.trim());
+    sendTextToAI(textInput.trim());
     setTextInput("");
   };
 
@@ -227,7 +294,7 @@ export default function VoiceAssistant() {
                 </div>
                 <div>
                   <div className="font-bold text-white text-sm">Bracket Buddy AI</div>
-                  <div className="text-xs text-white/40">Free · Powered by Web Speech + AI</div>
+                  <div className="text-xs text-white/40">Say "I pick Duke" to update your bracket!</div>
                 </div>
               </div>
               <button onClick={handleClose} className="text-white/40 hover:text-white transition-colors p-1">
@@ -246,7 +313,7 @@ export default function VoiceAssistant() {
                 }`}
               >
                 <Mic size={12} />
-                Voice {!isSupported && "(unavailable)"}
+                Voice Picks {!isSupported && "(unavailable)"}
               </button>
               <button
                 onClick={() => setMode("text")}
@@ -257,7 +324,7 @@ export default function VoiceAssistant() {
                 }`}
               >
                 <MessageSquare size={12} />
-                Text Chat
+                AI Advice
               </button>
             </div>
 
@@ -267,13 +334,19 @@ export default function VoiceAssistant() {
                 {messages.map((msg, i) => (
                   <div key={i} className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                     {msg.role === "assistant" && (
-                      <div className="w-6 h-6 rounded-full bg-[oklch(0.65_0.22_35/0.2)] flex items-center justify-center flex-shrink-0 mt-0.5 text-xs">
-                        🏀
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-xs ${
+                        msg.isPick
+                          ? "bg-[oklch(0.58_0.18_145/0.2)]"
+                          : "bg-[oklch(0.65_0.22_35/0.2)]"
+                      }`}>
+                        {msg.isPick ? <CheckCircle2 size={14} className="text-[oklch(0.58_0.18_145)]" /> : "🏀"}
                       </div>
                     )}
                     <div className={`max-w-xs px-3 py-1.5 rounded-xl text-sm leading-relaxed ${
                       msg.role === "user"
                         ? "bg-[oklch(0.55_0.2_250/0.15)] text-white border border-[oklch(0.55_0.2_250/0.2)]"
+                        : msg.isPick
+                        ? "bg-[oklch(0.58_0.18_145/0.12)] text-white/90 border border-[oklch(0.58_0.18_145/0.3)]"
                         : "bg-[oklch(0.65_0.22_35/0.1)] text-white/90 border border-[oklch(0.65_0.22_35/0.15)]"
                     }`}>
                       {msg.text}
@@ -299,7 +372,7 @@ export default function VoiceAssistant() {
                 {!isSupported ? (
                   <div className="flex items-start gap-2.5 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm">
                     <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
-                    <span>Voice requires Chrome, Edge, or Android. Switch to Text Chat above!</span>
+                    <span>Voice requires Chrome, Edge, or Android. Switch to AI Advice above!</span>
                   </div>
                 ) : (
                   <>
@@ -332,10 +405,12 @@ export default function VoiceAssistant() {
                       </button>
                       <div className="text-center">
                         <div className="font-semibold text-white text-sm">
-                          {state === "listening" ? "Listening... tap to stop" : state === "processing" ? "Thinking..." : "Tap to speak"}
+                          {state === "listening" ? "Listening... tap to stop" : state === "processing" ? "Detecting pick..." : "Tap to speak your pick"}
                         </div>
                         <div className="text-xs text-white/40 mt-0.5">
-                          {state === "listening" ? "Speak your question" : "Ask about picks, upsets, or strategy"}
+                          {state === "listening"
+                            ? "Say a team name to pick them"
+                            : "Say 'I pick Duke' to update your bracket"}
                         </div>
                       </div>
                     </div>
@@ -355,15 +430,10 @@ export default function VoiceAssistant() {
                       <div>
                         <div className="text-xs text-white/30 mb-2 uppercase tracking-wider font-semibold">Try saying:</div>
                         <div className="flex flex-wrap gap-1.5">
-                          {[
-                            "Who should I pick to win it all?",
-                            "Give me your best upset pick",
-                            "Which Cinderella team should I pick?",
-                            "Who are the biggest sleepers?",
-                          ].map((prompt) => (
+                          {EXAMPLE_VOICE_PROMPTS.map((prompt) => (
                             <button
                               key={prompt}
-                              onClick={() => sendToAI(prompt)}
+                              onClick={() => sendVoiceToAI(prompt)}
                               className="text-xs px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
                             >
                               {prompt}
@@ -377,15 +447,15 @@ export default function VoiceAssistant() {
               </div>
             )}
 
-            {/* TEXT MODE */}
+            {/* TEXT / AI ADVICE MODE */}
             {mode === "text" && (
               <div className="p-4 space-y-3">
                 {messages.length === 0 && (
                   <div className="grid grid-cols-2 gap-1.5">
-                    {EXAMPLE_PROMPTS.map((q) => (
+                    {EXAMPLE_TEXT_PROMPTS.map((q) => (
                       <button
                         key={q}
-                        onClick={() => sendToAI(q)}
+                        onClick={() => sendTextToAI(q)}
                         disabled={state === "processing"}
                         className="text-xs px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/8 hover:border-white/20 transition-all text-left disabled:opacity-40"
                       >
@@ -418,7 +488,7 @@ export default function VoiceAssistant() {
             {/* Footer */}
             <div className="px-5 py-2.5 border-t border-white/5">
               <span className="text-xs text-white/20">
-                🆓 100% free · Web Speech API + built-in AI · No per-minute costs
+                🆓 100% free · Voice picks update your bracket instantly
               </span>
             </div>
           </div>
