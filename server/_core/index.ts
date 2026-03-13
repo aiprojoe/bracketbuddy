@@ -7,6 +7,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { startSyncScheduler, stopSyncScheduler } from "../syncScheduler";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -59,7 +60,24 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    // Start the ESPN sync scheduler after the server is listening
+    startSyncScheduler();
   });
+
+  // Graceful shutdown — stop the scheduler before the process exits
+  const shutdown = () => {
+    console.log("[Server] Shutting down gracefully...");
+    stopSyncScheduler();
+    server.close(() => {
+      console.log("[Server] HTTP server closed.");
+      process.exit(0);
+    });
+    // Force exit after 10s if server doesn't close
+    setTimeout(() => process.exit(1), 10_000).unref();
+  };
+
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
 }
 
 startServer().catch(console.error);

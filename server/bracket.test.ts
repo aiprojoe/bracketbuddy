@@ -320,3 +320,68 @@ describe("tournament.setLocked", () => {
     await expect(caller.tournament.setLocked({ locked: true })).rejects.toThrow("Admin only");
   });
 });
+
+// ─── Sync Scheduler Tests ─────────────────────────────────────────────────────
+
+// Mock the syncScheduler module
+vi.mock("./syncScheduler", () => ({
+  startSyncScheduler: vi.fn(),
+  stopSyncScheduler: vi.fn(),
+  triggerImmediateSync: vi.fn().mockResolvedValue(undefined),
+  getSchedulerStatus: vi.fn().mockReturnValue({
+    running: true,
+    currentIntervalMs: 5 * 60 * 1000,
+    currentIntervalLabel: "5 min (active game window)",
+    lastRunAt: new Date("2026-03-20T21:00:00Z"),
+    lastRunResult: "✅ 4 games complete, 120 picks scored",
+    nextRunAt: new Date("2026-03-20T21:05:00Z"),
+    totalRuns: 12,
+    totalPicksScored: 480,
+    errors: [],
+  }),
+}));
+
+describe("tournament.syncStatus", () => {
+  it("requires authentication", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    await expect(caller.tournament.syncStatus()).rejects.toThrow();
+  });
+
+  it("requires admin role", async () => {
+    const caller = appRouter.createCaller(createAuthContext(1)); // role = "user"
+    await expect(caller.tournament.syncStatus()).rejects.toThrow("Admin only");
+  });
+
+  it("returns scheduler status for admin", async () => {
+    const adminCtx: TrpcContext = {
+      user: {
+        id: 99,
+        openId: "admin-user",
+        email: "admin@example.com",
+        name: "Admin",
+        loginMethod: "manus",
+        role: "admin",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastSignedIn: new Date(),
+      },
+      req: { protocol: "https", headers: {} } as TrpcContext["req"],
+      res: { clearCookie: vi.fn() } as unknown as TrpcContext["res"],
+    };
+    const caller = appRouter.createCaller(adminCtx);
+    const status = await caller.tournament.syncStatus();
+    expect(status).toHaveProperty("running");
+    expect(status).toHaveProperty("currentIntervalLabel");
+    expect(status).toHaveProperty("totalRuns");
+    expect(status).toHaveProperty("nextRunAt");
+    expect(status.running).toBe(true);
+    expect(status.totalPicksScored).toBe(480);
+  });
+});
+
+describe("tournament.syncNowImmediate", () => {
+  it("requires admin role", async () => {
+    const caller = appRouter.createCaller(createAuthContext(1));
+    await expect(caller.tournament.syncNowImmediate()).rejects.toThrow("Admin only");
+  });
+});

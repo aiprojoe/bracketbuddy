@@ -54,6 +54,20 @@ export default function Admin() {
   const { data: config, refetch: refetchConfig } = trpc.tournament.config.useQuery();
   const { data: liveScores, refetch: refetchScores } = trpc.tournament.liveScores.useQuery();
   const { data: allTeams } = trpc.teams.getAll.useQuery();
+  const { data: schedulerStatus, refetch: refetchScheduler } = trpc.tournament.syncStatus.useQuery(
+    undefined,
+    { refetchInterval: 15_000 } // refresh every 15s so countdown stays fresh
+  );
+
+  const syncImmediateMutation = trpc.tournament.syncNowImmediate.useMutation({
+    onSuccess: (result) => {
+      refetchScheduler();
+      refetchConfig();
+      refetchScores();
+      toast.success(`Sync triggered — ${result.lastRunResult ?? "running..."}`);
+    },
+    onError: (err) => toast.error(`Sync failed: ${err.message}`),
+  });
 
   const syncMutation = trpc.tournament.syncNow.useMutation({
     onSuccess: (result) => {
@@ -154,18 +168,18 @@ export default function Admin() {
           <h2 className="font-bold text-white text-lg">Tournament Controls</h2>
 
           <div className="flex flex-wrap gap-3">
-            {/* Sync Now */}
+            {/* Sync Now (uses scheduler so it resets the timer) */}
             <Button
-              onClick={() => syncMutation.mutate()}
-              disabled={syncMutation.isPending}
+              onClick={() => syncImmediateMutation.mutate()}
+              disabled={syncImmediateMutation.isPending}
               className="bg-[oklch(0.55_0.2_250)] hover:bg-[oklch(0.62_0.22_250)] text-white font-bold"
             >
-              {syncMutation.isPending ? (
+              {syncImmediateMutation.isPending ? (
                 <Loader2 size={16} className="mr-2 animate-spin" />
               ) : (
                 <RefreshCw size={16} className="mr-2" />
               )}
-              {syncMutation.isPending ? "Syncing ESPN..." : "Sync ESPN Now"}
+              {syncImmediateMutation.isPending ? "Syncing ESPN..." : "Sync ESPN Now"}
             </Button>
 
             {/* Lock/Unlock */}
@@ -191,6 +205,30 @@ export default function Admin() {
             <div>Last sync: {config?.lastSyncAt ? new Date(config.lastSyncAt).toLocaleString() : "Never"}</div>
             <div>Last status: {config?.lastSyncStatus ?? "—"}</div>
           </div>
+
+          {/* Scheduler Status Card */}
+          {schedulerStatus && (
+            <div className="mt-4 p-4 rounded-lg border border-white/10 bg-black/30 space-y-2">
+              <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                <span className={`w-2 h-2 rounded-full ${schedulerStatus.running ? "bg-green-400 animate-pulse" : "bg-red-400"}`} />
+                Auto-Sync Scheduler — {schedulerStatus.running ? "Running" : "Stopped"}
+              </div>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-white/50">
+                <div>Interval: <span className="text-white/80">{schedulerStatus.currentIntervalLabel}</span></div>
+                <div>Total runs: <span className="text-white/80">{schedulerStatus.totalRuns}</span></div>
+                <div>Last run: <span className="text-white/80">{schedulerStatus.lastRunAt ? new Date(schedulerStatus.lastRunAt).toLocaleTimeString() : "Not yet"}</span></div>
+                <div>Total picks scored: <span className="text-white/80">{schedulerStatus.totalPicksScored}</span></div>
+                <div>Next run: <span className="text-white/80">{schedulerStatus.nextRunAt ? new Date(schedulerStatus.nextRunAt).toLocaleTimeString() : "—"}</span></div>
+                <div>Last result: <span className="text-white/70 break-all">{schedulerStatus.lastRunResult ?? "—"}</span></div>
+              </div>
+              {schedulerStatus.errors.length > 0 && (
+                <div className="text-xs text-yellow-400/70 space-y-0.5">
+                  <div className="font-semibold">Recent errors:</div>
+                  {schedulerStatus.errors.map((e, i) => <div key={i} className="pl-2">• {e}</div>)}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Sync log */}
           {syncLog.length > 0 && (

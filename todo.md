@@ -92,3 +92,11 @@
 - [x] Add LiveScoresBanner component (scrolling ticker on bracket page)
 - [x] Wire LiveScoresBanner into Bracket page
 - [x] Write vitest tests for tournament procedures (24/24 passing, 0 TypeScript errors)
+
+## Scheduled ESPN Sync Job
+- [x] Add syncScheduler.ts with smart interval logic (5 min during tournament, 1 hr otherwise)
+- [x] Wire scheduler into server/_core/index.ts on startup
+- [x] Add graceful shutdown (clearTimeout on SIGTERM/SIGINT)
+- [x] Add tournament.syncStatus tRPC procedure for real-time scheduler state
+- [x] Update Admin panel with live sync countdown and scheduler status (auto-refreshes every 15s)
+- [x] Write vitest tests for scheduler logic (28/28 passing)

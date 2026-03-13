@@ -31,6 +31,7 @@ import { getDb } from "./db";
 import { brackets, users, gameResults, tournamentConfig } from "../drizzle/schema";
 import { eq, sql, desc } from "drizzle-orm";
 import { syncEspnScores, getLiveScores, getTournamentConfig } from "./espnSync";
+import { getSchedulerStatus, triggerImmediateSync } from "./syncScheduler";
 
 // ─── Seed on startup ──────────────────────────────────────────────────────────
 seedTeamsIfEmpty().catch(console.error);
@@ -456,6 +457,23 @@ IMPORTANT: Only output JSON. No other text.`,
         await db.update(brackets).set({ isLocked: input.locked }).where(eq(brackets.year, 2026));
         return { success: true, locked: input.locked };
       }),
+
+    // Get scheduler status (admin only)
+    syncStatus: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
+      }
+      return getSchedulerStatus();
+    }),
+
+    // Admin: trigger immediate sync (uses scheduler so it resets the timer)
+    syncNowImmediate: protectedProcedure.mutation(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
+      }
+      await triggerImmediateSync();
+      return getSchedulerStatus();
+    }),
 
     // Admin: manually set a game result (fallback if ESPN API doesn't have it)
     setResult: protectedProcedure
