@@ -1,22 +1,25 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import {
+  boolean,
+  int,
+  json,
+  mysqlEnum,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
+  float,
+} from "drizzle-orm/mysql-core";
 
-/**
- * Core user table backing auth flow.
- * Extend this file with additional tables as your product grows.
- * Columns use camelCase to match both database fields and generated types.
- */
 export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
   id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  avatar: text("avatar"),
+  totalPoints: int("totalPoints").default(0).notNull(),
+  bracketCount: int("bracketCount").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -25,4 +28,134 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+// 2026 NCAA Tournament Teams
+export const teams = mysqlTable("teams", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  shortName: varchar("shortName", { length: 20 }).notNull(),
+  seed: int("seed").notNull(),
+  region: mysqlEnum("region", ["East", "West", "South", "Midwest"]).notNull(),
+  conference: varchar("conference", { length: 50 }),
+  record: varchar("record", { length: 20 }),
+  ppg: float("ppg"), // points per game
+  oppg: float("oppg"), // opponent points per game
+  color: varchar("color", { length: 7 }).default("#1a1a2e"), // team primary color hex
+  color2: varchar("color2", { length: 7 }).default("#16213e"),
+  logoUrl: text("logoUrl"),
+  // Tournament history stats
+  tournamentWins: int("tournamentWins").default(0),
+  championships: int("championships").default(0),
+  isFirstFour: boolean("isFirstFour").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Team = typeof teams.$inferSelect;
+
+// User Brackets
+export const brackets = mysqlTable("brackets", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 100 }).default("My Bracket"),
+  year: int("year").default(2026).notNull(),
+  isComplete: boolean("isComplete").default(false).notNull(),
+  isLocked: boolean("isLocked").default(false).notNull(), // locked after tournament starts
+  totalPoints: int("totalPoints").default(0).notNull(),
+  maxPossiblePoints: int("maxPossiblePoints").default(0).notNull(),
+  correctPicks: int("correctPicks").default(0).notNull(),
+  totalPicks: int("totalPicks").default(0).notNull(),
+  upsetPicks: int("upsetPicks").default(0).notNull(),
+  correctUpsets: int("correctUpsets").default(0).notNull(),
+  championPick: int("championPick"), // team id
+  shareToken: varchar("shareToken", { length: 32 }).unique(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Bracket = typeof brackets.$inferSelect;
+
+// Individual picks within a bracket
+export const picks = mysqlTable("picks", {
+  id: int("id").autoincrement().primaryKey(),
+  bracketId: int("bracketId").notNull(),
+  userId: int("userId").notNull(),
+  round: mysqlEnum("round", [
+    "firstfour",
+    "round64",
+    "round32",
+    "sweet16",
+    "elite8",
+    "finalfour",
+    "championship",
+  ]).notNull(),
+  matchupId: varchar("matchupId", { length: 50 }).notNull(), // e.g. "East-1-1" region-round-slot
+  team1Id: int("team1Id").notNull(),
+  team2Id: int("team2Id"),
+  pickedTeamId: int("pickedTeamId").notNull(),
+  actualWinnerId: int("actualWinnerId"), // set after game is played
+  isCorrect: boolean("isCorrect"),
+  isUpset: boolean("isUpset").default(false).notNull(),
+  pointsEarned: int("pointsEarned").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Pick = typeof picks.$inferSelect;
+
+// Achievement definitions
+export const achievementDefs = mysqlTable("achievementDefs", {
+  id: int("id").autoincrement().primaryKey(),
+  key: varchar("key", { length: 50 }).notNull().unique(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description").notNull(),
+  icon: varchar("icon", { length: 10 }).notNull(), // emoji
+  rarity: mysqlEnum("rarity", ["common", "rare", "epic", "legendary"]).default("common").notNull(),
+  points: int("points").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+// User earned achievements
+export const userAchievements = mysqlTable("userAchievements", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  bracketId: int("bracketId"),
+  achievementKey: varchar("achievementKey", { length: 50 }).notNull(),
+  earnedAt: timestamp("earnedAt").defaultNow().notNull(),
+});
+
+export type UserAchievement = typeof userAchievements.$inferSelect;
+
+// Leaderboard comments / trash talk
+export const comments = mysqlTable("comments", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  content: text("content").notNull(),
+  likes: int("likes").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Comment = typeof comments.$inferSelect;
+
+// Tournament game results (admin updates these)
+export const gameResults = mysqlTable("gameResults", {
+  id: int("id").autoincrement().primaryKey(),
+  year: int("year").default(2026).notNull(),
+  round: mysqlEnum("round", [
+    "firstfour",
+    "round64",
+    "round32",
+    "sweet16",
+    "elite8",
+    "finalfour",
+    "championship",
+  ]).notNull(),
+  matchupId: varchar("matchupId", { length: 50 }).notNull(),
+  team1Id: int("team1Id").notNull(),
+  team2Id: int("team2Id").notNull(),
+  winnerId: int("winnerId"),
+  team1Score: int("team1Score"),
+  team2Score: int("team2Score"),
+  isComplete: boolean("isComplete").default(false).notNull(),
+  playedAt: timestamp("playedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});

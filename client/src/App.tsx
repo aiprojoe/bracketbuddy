@@ -5,12 +5,20 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import Bracket from "./pages/Bracket";
+import Leaderboard from "./pages/Leaderboard";
+import Profile from "./pages/Profile";
+import SharedBracket from "./pages/SharedBracket";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/bracket"} component={Bracket} />
+      <Route path={"/leaderboard"} component={Leaderboard} />
+      <Route path={"/profile"} component={Profile} />
+      <Route path={"/share/:token"} component={SharedBracket} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
@@ -27,7 +35,7 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider
-        defaultTheme="light"
+        defaultTheme="dark"
         // switchable
       >
         <TooltipProvider>
