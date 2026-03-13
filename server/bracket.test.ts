@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
+import * as db from "./db";
 
 // Mock DB functions
 vi.mock("./db", () => ({
@@ -24,6 +25,13 @@ vi.mock("./db", () => ({
   getAllAchievementDefs: vi.fn().mockResolvedValue([
     { key: "first_bracket", name: "Bracket Rookie", description: "Submit your first bracket", icon: "🏀", rarity: "common", points: 50 },
   ]),
+  createChallenge: vi.fn().mockResolvedValue({ challengeId: 1, inviteToken: "test-token-123" }),
+  getChallengeByToken: vi.fn().mockResolvedValue(null),
+  getChallengeById: vi.fn().mockResolvedValue(null),
+  acceptChallenge: vi.fn().mockResolvedValue(undefined),
+  getChallengeParticipants: vi.fn().mockResolvedValue([]),
+  getChallengesForUser: vi.fn().mockResolvedValue([]),
+  getH2HPicks: vi.fn().mockResolvedValue([]),
   getDb: vi.fn().mockResolvedValue({
     select: vi.fn().mockReturnThis(),
     from: vi.fn().mockReturnThis(),
@@ -133,5 +141,76 @@ describe("VAPI key configuration", () => {
     const key = process.env.VITE_VAPI_PUBLIC_KEY;
     // Key may be empty string if not provided, but env var should exist
     expect(key !== undefined).toBe(true);
+  });
+});
+
+// ─── Challenge Feature Tests ──────────────────────────────────────────────────
+
+describe("challenge.create", () => {
+  it("throws BAD_REQUEST when user has no bracket", async () => {
+    vi.mocked(db.getUserBracket).mockResolvedValueOnce(null);
+    const caller = appRouter.createCaller(createAuthContext());
+    await expect(caller.challenge.create({})).rejects.toThrow("You need a bracket first!");
+  });
+
+  it("requires authentication", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    await expect(caller.challenge.create({})).rejects.toThrow();
+  });
+});
+
+describe("challenge.getByToken", () => {
+  it("returns null for unknown token", async () => {
+    vi.mocked(db.getChallengeByToken).mockResolvedValueOnce(null);
+    const caller = appRouter.createCaller(createPublicContext());
+    const result = await caller.challenge.getByToken({ token: "nonexistent" });
+    expect(result).toBeNull();
+  });
+});
+
+describe("challenge.accept", () => {
+  it("throws NOT_FOUND for invalid token", async () => {
+    vi.mocked(db.getChallengeByToken).mockResolvedValueOnce(null);
+    const caller = appRouter.createCaller(createAuthContext());
+    await expect(caller.challenge.accept({ token: "bad-token" })).rejects.toThrow("Challenge not found");
+  });
+
+  it("throws BAD_REQUEST when challenger tries to accept own challenge", async () => {
+    vi.mocked(db.getChallengeByToken).mockResolvedValueOnce({
+      id: 1, challengerId: 1, challengedId: null, inviteToken: "tok",
+      title: "Test", status: "pending", winnerId: null,
+      createdAt: new Date(), updatedAt: new Date(),
+    });
+    const caller = appRouter.createCaller(createAuthContext(1));
+    await expect(caller.challenge.accept({ token: "tok" })).rejects.toThrow("You can't accept your own challenge!");
+  });
+
+  it("requires authentication", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    await expect(caller.challenge.accept({ token: "tok" })).rejects.toThrow();
+  });
+});
+
+describe("challenge.getMyChallenges", () => {
+  it("requires authentication", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    await expect(caller.challenge.getMyChallenges()).rejects.toThrow();
+  });
+
+  it("returns array for authenticated user", async () => {
+    vi.mocked(db.getChallengesForUser).mockResolvedValueOnce([]);
+    vi.mocked(db.getChallengeParticipants).mockResolvedValue([]);
+    const caller = appRouter.createCaller(createAuthContext());
+    const result = await caller.challenge.getMyChallenges();
+    expect(Array.isArray(result)).toBe(true);
+  });
+});
+
+describe("challenge.getH2H", () => {
+  it("returns null for unknown challenge", async () => {
+    vi.mocked(db.getChallengeById).mockResolvedValueOnce(null);
+    const caller = appRouter.createCaller(createPublicContext());
+    const result = await caller.challenge.getH2H({ challengeId: 9999 });
+    expect(result).toBeNull();
   });
 });

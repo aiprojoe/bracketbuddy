@@ -135,6 +135,34 @@ export const comments = mysqlTable("comments", {
 
 export type Comment = typeof comments.$inferSelect;
 
+// Bracket Challenges — head-to-head duels between users
+export const challenges = mysqlTable("challenges", {
+  id: int("id").autoincrement().primaryKey(),
+  challengerId: int("challengerId").notNull(), // user who created the challenge
+  challengedId: int("challengedId"),           // user who accepted (null until accepted)
+  inviteToken: varchar("inviteToken", { length: 32 }).notNull().unique(),
+  title: varchar("title", { length: 120 }).default("Bracket Challenge"),
+  status: mysqlEnum("status", ["pending", "active", "completed"]).default("pending").notNull(),
+  winnerId: int("winnerId"),                   // set when tournament ends
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Challenge = typeof challenges.$inferSelect;
+
+// Participants in a challenge (challenger + challenged, each with their bracket)
+export const challengeParticipants = mysqlTable("challengeParticipants", {
+  id: int("id").autoincrement().primaryKey(),
+  challengeId: int("challengeId").notNull(),
+  userId: int("userId").notNull(),
+  bracketId: int("bracketId"),                 // linked bracket (set on accept)
+  score: int("score").default(0).notNull(),
+  correctPicks: int("correctPicks").default(0).notNull(),
+  joinedAt: timestamp("joinedAt").defaultNow().notNull(),
+});
+
+export type ChallengeParticipant = typeof challengeParticipants.$inferSelect;
+
 // Tournament game results (admin updates these)
 export const gameResults = mysqlTable("gameResults", {
   id: int("id").autoincrement().primaryKey(),

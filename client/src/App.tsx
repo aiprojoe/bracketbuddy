@@ -9,6 +9,9 @@ import Bracket from "./pages/Bracket";
 import Leaderboard from "./pages/Leaderboard";
 import Profile from "./pages/Profile";
 import SharedBracket from "./pages/SharedBracket";
+import ChallengeInvite from "./pages/ChallengeInvite";
+import ChallengeH2H from "./pages/ChallengeH2H";
+import Challenges from "./pages/Challenges";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -19,6 +22,9 @@ function Router() {
       <Route path={"/leaderboard"} component={Leaderboard} />
       <Route path={"/profile"} component={Profile} />
       <Route path={"/share/:token"} component={SharedBracket} />
+      <Route path={"/challenges"} component={Challenges} />
+      <Route path={"/challenge/invite/:token"} component={ChallengeInvite} />
+      <Route path={"/challenge/:id/h2h"} component={ChallengeH2H} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

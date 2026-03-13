@@ -15,6 +15,13 @@
       "when": 1773424761707,
       "tag": "0001_little_starfox",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1773433661908,
+      "tag": "0002_wild_emma_frost",
+      "breakpoints": true
     }
   ]
 }

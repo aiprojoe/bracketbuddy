@@ -6,12 +6,19 @@ import { invokeLLM } from "./_core/llm";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
+  acceptChallenge,
   addComment,
   createBracket,
+  createChallenge,
   getAllAchievementDefs,
   getAllTeams,
   getBracketPicks,
+  getChallengeById,
+  getChallengeByToken,
+  getChallengeParticipants,
+  getChallengesForUser,
   getComments,
+  getH2HPicks,
   getLeaderboard,
   getUserAchievements,
   getUserBracket,
@@ -217,6 +224,78 @@ export const appRouter = router({
         await grantAchievement(ctx.user.id, input.key, input.bracketId);
         return { success: true };
       }),
+  }),
+
+  // ─── Challenges ──────────────────────────────────────────────────────────────
+  challenge: router({
+    create: protectedProcedure
+      .input(z.object({ title: z.string().optional() }))
+      .mutation(async ({ ctx, input }) => {
+        // User must have a bracket to challenge
+        const bracket = await getUserBracket(ctx.user.id);
+        if (!bracket) throw new TRPCError({ code: "BAD_REQUEST", message: "You need a bracket first!" });
+        const { challengeId, inviteToken } = await createChallenge(ctx.user.id, bracket.id, input.title);
+        // Grant challenger achievement
+        await grantAchievement(ctx.user.id, "challenger");
+        return { challengeId, inviteToken };
+      }),
+
+    getByToken: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        const challenge = await getChallengeByToken(input.token);
+        if (!challenge) return null;
+        const participants = await getChallengeParticipants(challenge.id);
+        const db = await getDb();
+        if (!db) return null;
+        // Get challenger name
+        const challenger = await db
+          .select({ name: users.name })
+          .from(users)
+          .where(eq(users.id, challenge.challengerId))
+          .limit(1);
+        return { challenge, participants, challengerName: challenger[0]?.name ?? "Someone" };
+      }),
+
+    accept: protectedProcedure
+      .input(z.object({ token: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const challenge = await getChallengeByToken(input.token);
+        if (!challenge) throw new TRPCError({ code: "NOT_FOUND", message: "Challenge not found" });
+        if (challenge.challengerId === ctx.user.id) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "You can't accept your own challenge!" });
+        }
+        if (challenge.status === "active" && challenge.challengedId !== ctx.user.id) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "This challenge has already been accepted by someone else." });
+        }
+        const bracket = await getUserBracket(ctx.user.id);
+        if (!bracket) throw new TRPCError({ code: "BAD_REQUEST", message: "You need a bracket to accept a challenge!" });
+        await acceptChallenge(challenge.id, ctx.user.id, bracket.id);
+        await grantAchievement(ctx.user.id, "challenger");
+        return { challengeId: challenge.id };
+      }),
+
+    getH2H: publicProcedure
+      .input(z.object({ challengeId: z.number() }))
+      .query(async ({ input }) => {
+        const challenge = await getChallengeById(input.challengeId);
+        if (!challenge) return null;
+        const participants = await getChallengeParticipants(input.challengeId);
+        const h2hPicks = await getH2HPicks(input.challengeId);
+        return { challenge, participants, h2hPicks };
+      }),
+
+    getMyChallenges: protectedProcedure.query(async ({ ctx }) => {
+      const myChallenges = await getChallengesForUser(ctx.user.id);
+      // Enrich each challenge with participants
+      const enriched = await Promise.all(
+        myChallenges.map(async (c) => {
+          const participants = await getChallengeParticipants(c.id);
+          return { ...c, participants };
+        })
+      );
+      return enriched;
+    }),
   }),
 
   // ─── AI Analysis ─────────────────────────────────────────────────────────────

@@ -4,6 +4,8 @@ import {
   InsertUser,
   achievementDefs,
   brackets,
+  challengeParticipants,
+  challenges,
   comments,
   gameResults,
   picks,
@@ -346,3 +348,129 @@ export async function getAllAchievementDefs() {
 }
 
 export type BracketPick = typeof picks.$inferSelect;
+
+// ─── Challenges ───────────────────────────────────────────────────────────────
+
+export async function createChallenge(challengerId: number, bracketId: number, title?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const { nanoid } = await import("nanoid");
+  const token = nanoid(16);
+  const [result] = await db
+    .insert(challenges)
+    .values({ challengerId, inviteToken: token, title: title ?? "Bracket Challenge", status: "pending" });
+  const challengeId = (result as any).insertId as number;
+  // Add challenger as participant
+  await db.insert(challengeParticipants).values({ challengeId, userId: challengerId, bracketId });
+  return { challengeId, inviteToken: token };
+}
+
+export async function getChallengeByToken(token: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db
+    .select()
+    .from(challenges)
+    .where(eq(challenges.inviteToken, token))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function getChallengeById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(challenges).where(eq(challenges.id, id)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function acceptChallenge(challengeId: number, userId: number, bracketId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  // Check not already a participant
+  const existing = await db
+    .select()
+    .from(challengeParticipants)
+    .where(and(eq(challengeParticipants.challengeId, challengeId), eq(challengeParticipants.userId, userId)))
+    .limit(1);
+  if (existing.length > 0) return; // already joined
+  await db.insert(challengeParticipants).values({ challengeId, userId, bracketId });
+  await db
+    .update(challenges)
+    .set({ challengedId: userId, status: "active" })
+    .where(eq(challenges.id, challengeId));
+}
+
+export async function getChallengeParticipants(challengeId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      participantId: challengeParticipants.id,
+      userId: challengeParticipants.userId,
+      bracketId: challengeParticipants.bracketId,
+      score: challengeParticipants.score,
+      correctPicks: challengeParticipants.correctPicks,
+      joinedAt: challengeParticipants.joinedAt,
+      userName: users.name,
+      bracketName: brackets.name,
+      bracketTotalPicks: brackets.totalPicks,
+      bracketUpsetPicks: brackets.upsetPicks,
+      bracketIsComplete: brackets.isComplete,
+    })
+    .from(challengeParticipants)
+    .leftJoin(users, eq(challengeParticipants.userId, users.id))
+    .leftJoin(brackets, eq(challengeParticipants.bracketId, brackets.id))
+    .where(eq(challengeParticipants.challengeId, challengeId));
+}
+
+export async function getChallengesForUser(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  // Get all challenge IDs this user participates in
+  const participations = await db
+    .select({ challengeId: challengeParticipants.challengeId })
+    .from(challengeParticipants)
+    .where(eq(challengeParticipants.userId, userId));
+  if (participations.length === 0) return [];
+  const ids = participations.map((p) => p.challengeId);
+  // Fetch all those challenges
+  const result = [];
+  for (const cid of ids) {
+    const rows = await db.select().from(challenges).where(eq(challenges.id, cid)).limit(1);
+    if (rows[0]) result.push(rows[0]);
+  }
+  return result;
+}
+
+export async function getH2HPicks(challengeId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  // Get participants' bracket IDs
+  const participants = await db
+    .select({ userId: challengeParticipants.userId, bracketId: challengeParticipants.bracketId })
+    .from(challengeParticipants)
+    .where(eq(challengeParticipants.challengeId, challengeId));
+  if (participants.length === 0) return [];
+  const result = [];
+  for (const p of participants) {
+    if (!p.bracketId) continue;
+    const bracketPicks = await db
+      .select({
+        matchupId: picks.matchupId,
+        round: picks.round,
+        pickedTeamId: picks.pickedTeamId,
+        isUpset: picks.isUpset,
+        isCorrect: picks.isCorrect,
+        pointsEarned: picks.pointsEarned,
+        teamName: teams.name,
+        teamShortName: teams.shortName,
+        teamSeed: teams.seed,
+        teamColor: teams.color,
+      })
+      .from(picks)
+      .leftJoin(teams, eq(picks.pickedTeamId, teams.id))
+      .where(eq(picks.bracketId, p.bracketId));
+    result.push({ userId: p.userId, bracketId: p.bracketId, picks: bracketPicks });
+  }
+  return result;
+}

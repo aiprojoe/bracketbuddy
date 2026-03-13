@@ -2,7 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
-import { Trophy, BarChart2, User, Home, Menu, X } from "lucide-react";
+import { Trophy, BarChart2, User, Home, Menu, X, Swords } from "lucide-react";
 import { useState } from "react";
 
 export default function NavBar() {
@@ -14,6 +14,7 @@ export default function NavBar() {
     { href: "/", label: "Home", icon: Home },
     { href: "/bracket", label: "My Bracket", icon: BarChart2 },
     { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+    { href: "/challenges", label: "Challenges", icon: Swords },
     { href: "/profile", label: "Profile", icon: User },
   ];
 

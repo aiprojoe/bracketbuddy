@@ -5,7 +5,7 @@ import NavBar from "@/components/NavBar";
 import { trpc } from "@/lib/trpc";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
-import { Mic, MicOff, Zap, Share2, RotateCcw, ChevronRight, Trophy, Sparkles } from "lucide-react";
+import { Mic, MicOff, Zap, Share2, RotateCcw, ChevronRight, Trophy, Sparkles, Swords } from "lucide-react";
 import { type TeamData, SEED_PAIRS_R64, type Region, type Round } from "../../../shared/bracketData";
 import VoiceAssistant from "@/components/VoiceAssistant";
 import AIAnalysis from "@/components/AIAnalysis";
@@ -591,9 +591,15 @@ export default function Bracket() {
         </div>
       </div>
 
-      {/* Share CTA */}
+      {/* Share + Challenge CTAs */}
       {totalPicks >= 10 && (
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2 items-end">
+          <Link href="/challenges">
+            <Button className="bg-[oklch(0.65_0.22_35)] hover:bg-[oklch(0.72_0.24_40)] text-white font-bold shadow-2xl glow-orange">
+              <Swords size={16} className="mr-2" />
+              Challenge a Friend
+            </Button>
+          </Link>
           <Link href="/profile">
             <Button className="bg-[oklch(0.55_0.2_250)] hover:bg-[oklch(0.62_0.22_250)] text-white font-bold shadow-2xl glow-blue">
               <Share2 size={16} className="mr-2" />

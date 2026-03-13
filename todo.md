@@ -49,3 +49,17 @@
 - [x] Add "Ask AI" text chat fallback (free, unlimited)
 - [x] Auto-disconnect VAPI after response is complete
 - [x] Rate limit: max 3 voice sessions per user per day (server-enforced)
+
+## Bracket Challenge Feature
+- [x] Add challenges table to DB schema (challenger, challenged, invite token, status)
+- [x] Add challengeParticipants table (userId, challengeId, bracketId, score)
+- [x] Push schema migration
+- [x] Add challenge DB helpers (create, accept, getByToken, getForUser, getH2H)
+- [x] Add challenge tRPC router (create, accept, getMyChallenge, getH2H, list)
+- [x] Build ChallengeInvite page (/challenge/invite/:token) — accept or view challenge
+- [x] Build Challenges list page (/challenges) with all user's active and pending duels
+- [x] Build H2H comparison page (/challenge/:id/h2h) with pick-by-pick breakdown
+- [x] Add "Challenge a Friend" button on Bracket page (floating CTA after 10+ picks)
+- [x] Add challenge invite link copy + share to Twitter/X
+- [x] Wire routes in App.tsx (/challenges, /challenge/invite/:token, /challenge/:id/h2h)
+- [x] Write vitest tests for challenge procedures (8 new tests, 18 total passing)
