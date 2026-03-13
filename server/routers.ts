@@ -330,28 +330,30 @@ export const appRouter = router({
         };
       }),
 
-    getVapiSystemPrompt: publicProcedure.query(async () => {
-      const teams = await getAllTeams();
-      const teamList = teams
-        .map((t) => `Seed ${t.seed} ${t.name} (${t.region} region, ${t.conference}, Record: ${t.record})`)
-        .join("\n");
+    // Free text/voice chat — no VAPI, uses built-in LLM
+    chat: publicProcedure
+      .input(z.object({ message: z.string().min(1).max(500) }))
+      .mutation(async ({ input }) => {
+        const teams = await getAllTeams();
+        const teamSummary = teams
+          .slice(0, 32)
+          .map((t) => `${t.seed} ${t.shortName} (${t.region}, ${t.conference}, ${t.record})`)
+          .join(", ");
 
-      return {
-        prompt: `You are Bracket Buddy, an enthusiastic and knowledgeable March Madness AI voice assistant! Your job is to help users fill out their 2026 NCAA Tournament bracket and give expert predictions.
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: `You are Bracket Buddy, a fun and knowledgeable March Madness AI assistant. Be energetic, use emojis, and make bold predictions. Keep responses under 150 words. Teams in the 2026 field: ${teamSummary}`,
+            },
+            { role: "user", content: input.message },
+          ],
+        });
 
-You are fun, energetic, and love March Madness. Use basketball slang, be encouraging, and make bold predictions.
-
-Here are all 64 teams in the 2026 tournament:
-${teamList}
-
-When a user says they want to pick a team, confirm their pick enthusiastically. For example:
-- "I pick Duke over Kentucky" → "Great pick! Duke is looking DOMINANT this year! 🏀"
-- "Who should I pick in the East?" → Give specific recommendations with reasoning
-- "Give me upset picks" → Suggest 2-3 specific upsets with reasoning
-
-Always be encouraging, fun, and specific. Keep responses under 3 sentences for voice. End with a basketball emoji or exclamation.`,
-      };
-    }),
+        return {
+          response: response.choices[0]?.message?.content ?? "Let's go! Time to bust some brackets! 🏀",
+        };
+      }),
   }),
 });
 

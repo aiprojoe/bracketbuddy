@@ -63,3 +63,12 @@
 - [x] Add challenge invite link copy + share to Twitter/X
 - [x] Wire routes in App.tsx (/challenges, /challenge/invite/:token, /challenge/:id/h2h)
 - [x] Write vitest tests for challenge procedures (8 new tests, 18 total passing)
+
+## Voice Migration: VAPI → Web Speech API (Free)
+- [x] Rewrite VoiceAssistant.tsx using browser Web Speech API (SpeechRecognition)
+- [x] Remove @vapi-ai/web package dependency
+- [x] Remove VITE_VAPI_PUBLIC_KEY references from code
+- [x] Keep push-to-talk UX, animated mic button, and AI text response panel
+- [x] Add browser compatibility check (Chrome/Edge/Android supported; Safari fallback message)
+- [x] Update Bracket.tsx to use new VoiceAssistant props if changed (no props needed)
+- [x] Run tests and verify 0 TypeScript errors (18/18 passing)
