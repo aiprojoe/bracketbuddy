@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import NavBar from "@/components/NavBar";
 import { trpc } from "@/lib/trpc";
 import { useState, useEffect, useCallback } from "react";
+import { useConfetti } from "@/hooks/useConfetti";
 import { toast } from "sonner";
 import { Mic, Zap, Share2, RotateCcw, ChevronRight, Trophy, Sparkles, Swords } from "lucide-react";
 import { type TeamData, SEED_PAIRS_R64, type Region, type Round } from "../../../shared/bracketData";
@@ -112,6 +113,7 @@ function Matchup({
 
 export default function Bracket() {
   const { user, isAuthenticated, loading } = useAuth();
+  const { firePick, fireChampion } = useConfetti();
   const [picks, setPicks] = useState<PicksMap>({});
   const [bracketId, setBracketId] = useState<number | null>(null);
   const [showAI, setShowAI] = useState(false);
@@ -281,6 +283,12 @@ export default function Bracket() {
         });
         if (result.isUpset) {
           toast.success("🔥 Upset pick! Bonus points if this hits!", { duration: 2000 });
+          firePick(true);
+        } else if (round === "championship") {
+          fireChampion();
+          toast.success("🏆 Champion locked in! 320 pts if correct!", { duration: 3000 });
+        } else {
+          firePick(false);
         }
       } catch {
         setPicks(prevPicks);

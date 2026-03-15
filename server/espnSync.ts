@@ -296,7 +296,11 @@ export async function syncEspnScores(year = 2026): Promise<SyncResult> {
       const team2DbId = matchTeam(game.team2EspnId, game.team2Seed, game.team2Name, game.region, dbTeams);
 
       if (!team1DbId || !team2DbId) {
-        result.errors.push(`Could not match teams for game ${game.espnGameId}: ${game.team1Name} vs ${game.team2Name}`);
+        // TBD vs TBD is expected before Selection Sunday — not a real error
+        const isTbd = game.team1Name === "TBD" || game.team2Name === "TBD";
+        if (!isTbd) {
+          result.errors.push(`Could not match teams for game ${game.espnGameId}: ${game.team1Name} vs ${game.team2Name}`);
+        }
         continue;
       }
 

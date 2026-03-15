@@ -3,7 +3,9 @@ import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import NavBar from "@/components/NavBar";
 import { Link } from "wouter";
-import { Trophy, Mic, Zap, Share2, Star, BarChart2, ChevronRight, Crown } from "lucide-react";
+import { Trophy, Mic, Zap, Share2, Star, BarChart2, ChevronRight, Crown, Swords, Clock } from "lucide-react";
+import { useWelcome } from "@/hooks/useWelcome";
+import { useState, useEffect } from "react";
 
 const features = [
   {
@@ -59,12 +61,52 @@ const achievements = [
   { icon: "🎤", name: "Voice Commander", rarity: "rare", desc: "10 voice picks made" },
 ];
 
+// Countdown to bracket lock (March 18, 2026 12:00 PM ET)
+const LOCK_DATE = new Date("2026-03-18T12:00:00-04:00");
+
+function useCountdown(target: Date) {
+  const [timeLeft, setTimeLeft] = useState(() => Math.max(0, target.getTime() - Date.now()));
+  useEffect(() => {
+    const id = setInterval(() => setTimeLeft(Math.max(0, target.getTime() - Date.now())), 1000);
+    return () => clearInterval(id);
+  }, [target]);
+  const days = Math.floor(timeLeft / 86400000);
+  const hours = Math.floor((timeLeft % 86400000) / 3600000);
+  const mins = Math.floor((timeLeft % 3600000) / 60000);
+  const secs = Math.floor((timeLeft % 60000) / 1000);
+  return { days, hours, mins, secs, expired: timeLeft === 0 };
+}
+
 export default function Home() {
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const countdown = useCountdown(LOCK_DATE);
+
+  // Fire welcome toast + auto-redirect new users to bracket
+  useWelcome(user ? { id: user.id, name: user.name, bracketCount: user.bracketCount ?? 0 } : null);
 
   return (
     <div className="min-h-screen bg-[oklch(0.1_0.01_260)] text-white">
       <NavBar />
+
+      {/* Onboarding banner for logged-in users with no picks yet */}
+      {isAuthenticated && (user?.bracketCount ?? 0) === 0 && (
+        <div className="bg-gradient-to-r from-[oklch(0.65_0.22_35/0.2)] to-[oklch(0.55_0.2_250/0.15)] border-b border-[oklch(0.65_0.22_35/0.4)] px-4 py-3">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🏀</span>
+              <div>
+                <p className="text-white font-bold text-sm">Your bracket is ready to fill out!</p>
+                <p className="text-white/60 text-xs">Pick all 63 games and compete for bragging rights</p>
+              </div>
+            </div>
+            <Link href="/bracket">
+              <Button size="sm" className="bg-[oklch(0.65_0.22_35)] hover:bg-[oklch(0.72_0.24_40)] text-white font-bold">
+                Build My Bracket →
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
@@ -141,6 +183,34 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Bracket Lock Countdown */}
+      {!countdown.expired && (
+        <section className="bg-[oklch(0.12_0.01_260)] border-y border-white/10 py-10">
+          <div className="max-w-3xl mx-auto px-4 text-center">
+            <div className="flex items-center justify-center gap-2 mb-4 text-[oklch(0.65_0.22_35)]">
+              <Clock size={18} />
+              <span className="text-sm font-semibold uppercase tracking-wider">Brackets Lock In</span>
+            </div>
+            <div className="flex justify-center gap-4 md:gap-8">
+              {[
+                { val: countdown.days, label: "Days" },
+                { val: countdown.hours, label: "Hours" },
+                { val: countdown.mins, label: "Minutes" },
+                { val: countdown.secs, label: "Seconds" },
+              ].map(({ val, label }) => (
+                <div key={label} className="text-center">
+                  <div className="font-display text-5xl md:text-6xl text-white tabular-nums w-16 md:w-24">
+                    {String(val).padStart(2, "0")}
+                  </div>
+                  <div className="text-xs text-white/40 uppercase tracking-wider mt-1">{label}</div>
+                </div>
+              ))}
+            </div>
+            <p className="text-white/40 text-sm mt-4">March 18 · First Four tip-off · No changes after lock</p>
+          </div>
+        </section>
+      )}
+
       {/* Features Grid */}
       <section className="max-w-7xl mx-auto px-4 py-20">
         <div className="text-center mb-12">
@@ -174,7 +244,7 @@ export default function Home() {
             {achievements.map(({ icon, name, rarity, desc }) => (
               <div
                 key={name}
-                className={`p-4 rounded-2xl border text-center ${rarity}-bg transition-all hover:scale-105`}
+                className={`p-4 rounded-2xl border text-center ${rarity}-bg transition-all hover:scale-105 cursor-default`}
               >
                 <div className="text-4xl mb-2">{icon}</div>
                 <div className={`font-bold text-sm rarity-${rarity} mb-1`}>{name}</div>
@@ -194,7 +264,7 @@ export default function Home() {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[oklch(0.55_0.2_250/0.15)] border border-[oklch(0.55_0.2_250/0.3)] text-[oklch(0.55_0.2_250)] text-sm font-semibold mb-6">
               <Mic size={14} />
-              Powered by VAPI Voice AI
+              AI-Powered Voice Assistant
             </div>
             <h2 className="font-display text-5xl text-white mb-4">FILL YOUR BRACKET BY VOICE</h2>
             <p className="text-white/60 text-lg mb-6 leading-relaxed">
@@ -229,13 +299,43 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Challenge Friends Section */}
+      <section className="bg-[oklch(0.12_0.01_260)] py-20">
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <Swords size={48} className="text-[oklch(0.55_0.2_250)] mx-auto mb-6" />
+          <h2 className="font-display text-5xl text-white mb-4">CHALLENGE YOUR FRIENDS</h2>
+          <p className="text-white/60 text-lg mb-8">
+            Send a challenge link to anyone. Compare your picks head-to-head, see who called the upsets, and settle the debate once and for all.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {isAuthenticated ? (
+              <Link href="/challenges">
+                <Button size="lg" className="bg-[oklch(0.55_0.2_250/0.2)] hover:bg-[oklch(0.55_0.2_250/0.3)] text-[oklch(0.55_0.2_250)] border border-[oklch(0.55_0.2_250/0.4)] font-bold text-lg px-8 py-6 rounded-xl">
+                  <Swords size={18} className="mr-2" />
+                  My Challenges
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                size="lg"
+                onClick={() => (window.location.href = getLoginUrl())}
+                className="bg-[oklch(0.55_0.2_250/0.2)] hover:bg-[oklch(0.55_0.2_250/0.3)] text-[oklch(0.55_0.2_250)] border border-[oklch(0.55_0.2_250/0.4)] font-bold text-lg px-8 py-6 rounded-xl"
+              >
+                <Swords size={18} className="mr-2" />
+                Challenge a Friend
+              </Button>
+            )}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="bg-gradient-to-r from-[oklch(0.65_0.22_35/0.15)] to-[oklch(0.55_0.2_250/0.1)] border-y border-white/10 py-20">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <Crown size={48} className="text-[oklch(0.78_0.18_80)] mx-auto mb-6" />
           <h2 className="font-display text-6xl text-white mb-4">READY TO DOMINATE?</h2>
           <p className="text-white/60 text-xl mb-8">
-            Selection Sunday is March 15. Get your bracket ready and show the world who the real March Madness oracle is.
+            The bracket is out. Get your picks in before March 18 and show the world who the real March Madness oracle is.
           </p>
           {isAuthenticated ? (
             <Link href="/bracket">

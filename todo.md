@@ -109,3 +109,17 @@
 - [x] Add "Bracket Reset" option in admin (clear all user picks when real teams load)
 - [x] Run full tests and verify 0 TS errors (28/28 passing)
 - [x] Save checkpoint and publish
+
+## Production Polish Sprint
+- [x] Welcome toast on first sign-in ("Welcome to BracketBuddy! 🏀")
+- [x] First-login redirect to bracket page automatically
+- [x] Onboarding banner for logged-in users with 0 picks
+- [x] Confetti animation on bracket picks (canvas-confetti) — subtle pop, big burst on upsets, epic on champion
+- [x] Empty states already handled in leaderboard, challenges, profile
+- [x] Loading states already handled in all pages
+- [x] ErrorBoundary already wired in App.tsx
+- [x] Mobile layout audited — responsive grid and flex layouts throughout
+- [x] Removed VAPI references from landing page copy
+- [x] Landing page copy updated — no VAPI mentions
+- [x] Bracket lock countdown timer added to Home page (live seconds)
+- [x] 0 TypeScript errors, 28/28 tests passing
