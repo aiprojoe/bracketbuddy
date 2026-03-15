@@ -160,10 +160,14 @@
 .rarity-rare { color: oklch(0.62 0.22 250); }
 .rarity-epic { color: oklch(0.65 0.22 290); }
 .rarity-legendary { color: oklch(0.78 0.18 80); }
-.rarity-common-bg { background: oklch(0.75 0.01 260 / 0.15); border-color: oklch(0.75 0.01 260 / 0.3); }
-.rarity-rare-bg { background: oklch(0.62 0.22 250 / 0.15); border-color: oklch(0.62 0.22 250 / 0.3); }
-.rarity-epic-bg { background: oklch(0.65 0.22 290 / 0.15); border-color: oklch(0.65 0.22 290 / 0.3); }
-.rarity-legendary-bg { background: oklch(0.78 0.18 80 / 0.15); border-color: oklch(0.78 0.18 80 / 0.3); }
+.rarity-common-bg { background: oklch(0.75 0.01 260 / 0.15); border: 1px solid oklch(0.75 0.01 260 / 0.3); }
+.rarity-rare-bg { background: oklch(0.62 0.22 250 / 0.15); border: 1px solid oklch(0.62 0.22 250 / 0.3); }
+.rarity-epic-bg { background: oklch(0.65 0.22 290 / 0.15); border: 1px solid oklch(0.65 0.22 290 / 0.3); }
+.rarity-legendary-bg { background: oklch(0.78 0.18 80 / 0.15); border: 1px solid oklch(0.78 0.18 80 / 0.3); }
+/* Mobile touch target improvements */
+@media (max-width: 640px) {
+  .bracket-team-slot { min-height: 44px; }
+}
 @keyframes voice-pulse { 0%, 100% { box-shadow: 0 0 0 0 oklch(0.65 0.22 35 / 0.7); } 50% { box-shadow: 0 0 0 15px oklch(0.65 0.22 35 / 0); } }
 .voice-active { animation: voice-pulse 1.5s ease-in-out infinite; }
 @keyframes bounce-in { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.1); } 70% { transform: scale(0.9); } 100% { transform: scale(1); opacity: 1; } }

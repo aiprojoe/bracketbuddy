@@ -142,3 +142,17 @@
 - [x] Share modal wired to bracketData.shareToken for permanent shareable link
 - [x] Generate dynamic share text with user's champion pick and points
 - [x] Run TypeScript check (0 errors) and save checkpoint
+
+## Full Polish Sprint
+- [x] Remove dead "Voice AI" header button — replaced with functional "Ask Buddy" button that opens the AI panel
+- [x] Add "Pick earlier rounds first" unlock hint on TBD matchup slots (← Round of 64 first)
+- [x] Improve voice browser compatibility — clear Chrome-only notice with icon + "Switch to AI Advice" CTA button
+- [x] Fix Voice AI button in header — now opens VoiceAssistant panel via forceOpen prop
+- [x] Add pick count badge to region tabs (verified working)
+- [x] Fix mobile: bracket tabs overflow on small screens (overflow-x-auto already in place)
+- [x] Add mobile scroll hint on bracket page (← Scroll to see all rounds →)
+- [x] Hide floating mic button when panel is open (no overlap)
+- [x] Add tooltip label to floating mic button on hover
+- [x] Fix rarity-*-bg CSS classes (border was not applying correctly)
+- [x] Fix achievement card class in Profile page (rarity-*-bg pattern)
+- [x] Run TypeScript check and all tests (0 errors, 28/28 passing)

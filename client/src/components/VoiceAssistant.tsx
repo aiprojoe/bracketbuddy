@@ -77,9 +77,13 @@ const EXAMPLE_TEXT_PROMPTS = [
 interface VoiceAssistantProps {
   /** Called when the AI detects a bracket pick in the user's speech. Pass the teamId to update the bracket. */
   onPickByVoice?: (teamId: number, teamName: string) => void;
+  /** When true, programmatically open the panel (e.g. from header button). */
+  forceOpen?: boolean;
+  /** Called after forceOpen is handled so parent can reset the flag. */
+  onForceOpenHandled?: () => void;
 }
 
-export default function VoiceAssistant({ onPickByVoice }: VoiceAssistantProps) {
+export default function VoiceAssistant({ onPickByVoice, forceOpen, onForceOpenHandled }: VoiceAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<"voice" | "text">("voice");
   const [state, setState] = useState<AssistantState>("idle");
@@ -158,6 +162,14 @@ export default function VoiceAssistant({ onPickByVoice }: VoiceAssistantProps) {
       try { recognitionRef.current?.abort(); } catch {}
     };
   }, []);
+
+  // Handle programmatic open from parent (e.g. header button)
+  useEffect(() => {
+    if (forceOpen) {
+      setIsOpen(true);
+      onForceOpenHandled?.();
+    }
+  }, [forceOpen, onForceOpenHandled]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -264,22 +276,28 @@ export default function VoiceAssistant({ onPickByVoice }: VoiceAssistantProps) {
 
   return (
     <>
-      {/* Floating Trigger Button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className={`fixed bottom-6 left-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 ${
-          state === "listening"
-            ? "bg-[oklch(0.58_0.18_145)] animate-pulse"
-            : "bg-[oklch(0.65_0.22_35)] hover:bg-[oklch(0.72_0.24_40)]"
-        }`}
-        title="Ask Buddy AI"
-        aria-label="Open AI assistant"
-      >
-        <Mic size={22} className="text-white" />
-        {state === "listening" && (
-          <span className="absolute inset-0 rounded-full bg-[oklch(0.58_0.18_145/0.4)] animate-ping" />
-        )}
-      </button>
+      {/* Floating Trigger Button — hidden when panel is open */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className={`fixed bottom-6 left-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 group ${
+            state === "listening"
+              ? "bg-[oklch(0.58_0.18_145)] animate-pulse"
+              : "bg-[oklch(0.65_0.22_35)] hover:bg-[oklch(0.72_0.24_40)]"
+          }`}
+          title="Ask Buddy AI"
+          aria-label="Open AI assistant"
+        >
+          <Mic size={22} className="text-white" />
+          {state === "listening" && (
+            <span className="absolute inset-0 rounded-full bg-[oklch(0.58_0.18_145/0.4)] animate-ping" />
+          )}
+          {/* Tooltip label */}
+          <span className="absolute left-16 bottom-1/2 translate-y-1/2 bg-black/80 text-white text-xs font-semibold px-2.5 py-1 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            Ask Buddy AI
+          </span>
+        </button>
+      )}
 
       {/* Panel */}
       {isOpen && (
@@ -370,9 +388,20 @@ export default function VoiceAssistant({ onPickByVoice }: VoiceAssistantProps) {
             {mode === "voice" && (
               <div className="p-5 space-y-4">
                 {!isSupported ? (
-                  <div className="flex items-start gap-2.5 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm">
-                    <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
-                    <span>Voice requires Chrome, Edge, or Android. Switch to AI Advice above!</span>
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3 p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-300">
+                      <AlertCircle size={18} className="mt-0.5 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold text-sm mb-1">Voice not available in this browser</div>
+                        <div className="text-xs text-yellow-300/70">Voice picks require Chrome, Edge, or Android Chrome. Safari and Firefox don't support this feature yet.</div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setMode("text")}
+                      className="w-full py-3 rounded-xl bg-[oklch(0.55_0.2_250/0.15)] border border-[oklch(0.55_0.2_250/0.3)] text-[oklch(0.55_0.2_250)] text-sm font-semibold hover:bg-[oklch(0.55_0.2_250/0.25)] transition-all"
+                    >
+                      Switch to AI Advice (works everywhere) →
+                    </button>
                   </div>
                 ) : (
                   <>

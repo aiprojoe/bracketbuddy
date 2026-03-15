@@ -221,7 +221,7 @@ export default function Profile() {
               {sortedAchievements.map((ach) => (
                 <div
                   key={ach.key}
-                  className={`p-4 rounded-2xl border ${ach.rarity ?? "common"}-bg animate-bounce-in`}
+                  className={`p-4 rounded-2xl rarity-${ach.rarity ?? "common"}-bg animate-bounce-in`}
                 >
                   <div className="text-3xl mb-2">{ach.icon}</div>
                   <div className={`font-bold text-sm rarity-${ach.rarity ?? "common"} mb-1`}>{ach.name}</div>

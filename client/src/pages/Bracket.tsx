@@ -39,17 +39,22 @@ function TeamSlot({
   picked,
   eliminated,
   onClick,
+  hintText,
 }: {
   team?: TeamData;
   picked: boolean;
   eliminated: boolean;
   onClick?: () => void;
+  hintText?: string;
 }) {
   if (!team) {
     return (
-      <div className="flex items-center gap-2 px-2 py-1.5 rounded border border-white/5 bg-white/3 min-h-[36px]">
+      <div
+        className="flex items-center gap-2 px-2 py-1.5 rounded border border-white/5 bg-white/3 min-h-[36px]"
+        title={hintText}
+      >
         <div className="w-5 h-5 rounded bg-white/5 flex items-center justify-center text-xs text-white/20">?</div>
-        <span className="text-white/20 text-xs">TBD</span>
+        <span className="text-white/20 text-xs">{hintText ? "Awaiting pick" : "TBD"}</span>
       </div>
     );
   }
@@ -85,6 +90,7 @@ function Matchup({
   eliminatedTeamId,
   onPick,
   matchupId,
+  hintText,
 }: {
   team1?: TeamData;
   team2?: TeamData;
@@ -92,14 +98,17 @@ function Matchup({
   eliminatedTeamId?: number;
   onPick: (teamId: number, team1Seed: number, team2Seed: number | null) => void;
   matchupId: string;
+  hintText?: string;
 }) {
+  const isTBD = !team1 || !team2;
   return (
-    <div className="flex flex-col gap-0.5 min-w-[130px] max-w-[150px]">
+    <div className={`flex flex-col gap-0.5 min-w-[130px] max-w-[150px] ${isTBD ? "opacity-60" : ""}`}>
       <TeamSlot
         team={team1}
         picked={pickedTeamId === team1?.id}
         eliminated={eliminatedTeamId === team1?.id}
         onClick={team1 && team2 ? () => onPick(team1.id, team1.seed, team2?.seed ?? null) : undefined}
+        hintText={!team1 ? hintText : undefined}
       />
       <div className="text-center text-[10px] text-white/20 leading-none">vs</div>
       <TeamSlot
@@ -107,6 +116,7 @@ function Matchup({
         picked={pickedTeamId === team2?.id}
         eliminated={eliminatedTeamId === team2?.id}
         onClick={team2 && team1 ? () => onPick(team2.id, team1?.seed ?? 99, team2.seed) : undefined}
+        hintText={!team2 ? hintText : undefined}
       />
     </div>
   );
@@ -121,6 +131,7 @@ export default function Bracket() {
   const [activeRegion, setActiveRegion] = useState<Region>("East");
   const [totalPicks, setTotalPicks] = useState(0);
   const [showShare, setShowShare] = useState(false);
+  const [showVoicePanel, setShowVoicePanel] = useState(false);
 
   const { data: teamsData } = trpc.teams.getAll.useQuery();
   const { data: bracketData, refetch: refetchBracket } = trpc.bracket.getMine.useQuery(undefined, {
@@ -356,13 +367,12 @@ export default function Bracket() {
               </Button>
 
               <Button
-                onClick={() => {}}
+                onClick={() => setShowVoicePanel(true)}
                 size="sm"
-                title="Voice AI — click the mic button at bottom-left"
                 className="bg-[oklch(0.65_0.22_35/0.2)] text-[oklch(0.65_0.22_35)] border border-[oklch(0.65_0.22_35/0.4)] hover:bg-[oklch(0.65_0.22_35/0.3)] font-bold"
               >
                 <Mic size={14} className="mr-1" />
-                Voice AI
+                Ask Buddy
               </Button>
             </div>
           </div>
@@ -384,7 +394,9 @@ export default function Bracket() {
 
       {/* Voice Assistant — floating, always available on bracket page */}
       <VoiceAssistant
-        onPickByVoice={(teamId, teamName) => {
+        forceOpen={showVoicePanel}
+        onForceOpenHandled={() => setShowVoicePanel(false)}
+        onPickByVoice={(teamId: number, teamName: string) => {
           // Find which matchup this team is currently in and pick them
           const allRegions: Region[] = ["East", "West", "South", "Midwest"];
           const allRounds: Round[] = ["round64", "round32", "sweet16", "elite8"];
@@ -464,6 +476,12 @@ export default function Bracket() {
 
       {/* Bracket Content */}
       <div className="max-w-full mx-auto px-4 py-6 overflow-x-auto">
+        {/* Mobile scroll hint */}
+        <div className="flex items-center gap-2 text-white/30 text-xs mb-3 sm:hidden">
+          <span>←</span>
+          <span>Scroll to see all rounds</span>
+          <span>→</span>
+        </div>
         {activeRegion !== ("FinalFour" as any) ? (
           <div>
             <div className="flex items-center gap-3 mb-6">
@@ -475,36 +493,49 @@ export default function Bracket() {
 
             {/* Bracket Grid */}
             <div className="flex gap-6 min-w-max">
-              {roundMatchups.map(({ round, matchups }) => (
-                <div key={round} className="flex flex-col gap-2">
-                  <div className="text-center text-xs font-condensed uppercase tracking-wider text-white/40 mb-2 px-2">
-                    {ROUND_LABELS[round]}
+              {roundMatchups.map(({ round, matchups }) => {
+                const prevRoundLabel = round === "round32" ? "Round of 64" : round === "sweet16" ? "Round of 32" : round === "elite8" ? "Sweet 16" : undefined;
+                const allTBD = matchups.every((m) => !m.team1 && !m.team2);
+                const hintText = prevRoundLabel ? `Pick ${prevRoundLabel} winners to unlock` : undefined;
+                return (
+                  <div key={round} className="flex flex-col gap-2">
+                    <div className="text-center mb-2 px-2">
+                      <div className="text-xs font-condensed uppercase tracking-wider text-white/40">
+                        {ROUND_LABELS[round]}
+                      </div>
+                      {allTBD && hintText && (
+                        <div className="text-[9px] text-[oklch(0.65_0.22_35/0.7)] mt-0.5 font-medium">
+                          ← {prevRoundLabel} first
+                        </div>
+                      )}
+                    </div>
+                    <div
+                      className="flex flex-col"
+                      style={{
+                        gap: round === "round64" ? "8px" : round === "round32" ? "52px" : round === "sweet16" ? "132px" : "292px",
+                        paddingTop: round === "round64" ? 0 : round === "round32" ? "28px" : round === "sweet16" ? "68px" : "148px",
+                      }}
+                    >
+                      {matchups.map((m) => (
+                        <Matchup
+                          key={m.id}
+                          team1={m.team1}
+                          team2={m.team2}
+                          pickedTeamId={picks[m.id]}
+                          onPick={(teamId, t1Seed, t2Seed) => {
+                            const t1 = m.team1;
+                            const t2 = m.team2;
+                            if (!t1 || !t2) return;
+                            handlePick(m.id, teamId, round, t1.id, t2.id, t1Seed, t2Seed);
+                          }}
+                          matchupId={m.id}
+                          hintText={hintText}
+                        />
+                      ))}
+                    </div>
                   </div>
-                  <div
-                    className="flex flex-col"
-                    style={{
-                      gap: round === "round64" ? "8px" : round === "round32" ? "52px" : round === "sweet16" ? "132px" : "292px",
-                      paddingTop: round === "round64" ? 0 : round === "round32" ? "28px" : round === "sweet16" ? "68px" : "148px",
-                    }}
-                  >
-                    {matchups.map((m) => (
-                      <Matchup
-                        key={m.id}
-                        team1={m.team1}
-                        team2={m.team2}
-                        pickedTeamId={picks[m.id]}
-                        onPick={(teamId, t1Seed, t2Seed) => {
-                          const t1 = m.team1;
-                          const t2 = m.team2;
-                          if (!t1 || !t2) return;
-                          handlePick(m.id, teamId, round, t1.id, t2.id, t1Seed, t2Seed);
-                        }}
-                        matchupId={m.id}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
 
               {/* Region Winner */}
               <div className="flex flex-col gap-2">
