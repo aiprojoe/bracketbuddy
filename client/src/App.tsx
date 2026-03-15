@@ -13,6 +13,7 @@ import ChallengeInvite from "./pages/ChallengeInvite";
 import ChallengeH2H from "./pages/ChallengeH2H";
 import Challenges from "./pages/Challenges";
 import Admin from "./pages/Admin";
+import PoweredByFooter from "./components/PoweredByFooter";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -48,7 +49,10 @@ function App() {
       >
         <TooltipProvider>
           <Toaster />
-          <Router />
+          <div className="flex flex-col min-h-screen">
+            <Router />
+            <PoweredByFooter />
+          </div>
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

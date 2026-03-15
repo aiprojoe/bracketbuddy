@@ -129,3 +129,9 @@
 - [ ] Update all teams in DB with real seeds, regions, names
 - [ ] Trigger ESPN sync for any live game data
 - [ ] Verify bracket page shows real teams
+
+## Footer Badge — Unrivaled Business Solutions
+- [x] Create PoweredByFooter component (enterprise-grade, minimal, links to unrivaledbusinesssolutions.com)
+- [x] Add "Want an app like this?" CTA in footer
+- [x] Add footer to App.tsx so it appears on all pages
+- [x] Run TypeScript check and save checkpoint (0 errors)
