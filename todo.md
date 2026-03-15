@@ -123,3 +123,9 @@
 - [x] Landing page copy updated — no VAPI mentions
 - [x] Bracket lock countdown timer added to Home page (live seconds)
 - [x] 0 TypeScript errors, 28/28 tests passing
+
+## Real 2026 Bracket Update (Selection Sunday)
+- [ ] Fetch real 68-team bracket from ESPN API
+- [ ] Update all teams in DB with real seeds, regions, names
+- [ ] Trigger ESPN sync for any live game data
+- [ ] Verify bracket page shows real teams
