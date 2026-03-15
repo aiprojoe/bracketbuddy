@@ -14,7 +14,7 @@
  */
 
 import { eq, and, isNull, inArray } from "drizzle-orm";
-import { getDb } from "./db";
+import { getDb, resetDb } from "./db";
 import {
   gameResults,
   picks,
@@ -238,13 +238,20 @@ export async function syncEspnScores(year = 2026): Promise<SyncResult> {
   const result: SyncResult = { gamesFound: 0, gamesCompleted: 0, gamesUpdated: 0, picksScored: 0, errors: [] };
 
   // Load all our DB teams for matching
-  const dbTeams = await db.select({
-    id: teams.id,
-    name: teams.name,
-    shortName: teams.shortName,
-    seed: teams.seed,
-    region: teams.region,
-  }).from(teams);
+  let dbTeams: Array<{ id: number; name: string; shortName: string; seed: number; region: string }>;
+  try {
+    dbTeams = await db.select({
+      id: teams.id,
+      name: teams.name,
+      shortName: teams.shortName,
+      seed: teams.seed,
+      region: teams.region,
+    }).from(teams);
+  } catch (err) {
+    // Stale pool after hibernation — reset so next call gets a fresh connection
+    resetDb();
+    return { ...result, errors: [`DB connection error (will retry): ${err}`] };
+  }
 
   // Determine which dates to fetch (today ± 1 day + all tournament dates)
   const today = new Date();

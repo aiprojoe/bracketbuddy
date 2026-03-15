@@ -1,5 +1,7 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2";
+import type { Pool } from "mysql2";
 import {
   InsertUser,
   achievementDefs,
@@ -16,17 +18,42 @@ import {
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let _pool: Pool | null = null;
 
+/**
+ * Returns a drizzle instance backed by a connection pool.
+ * The pool handles reconnects automatically after hibernation.
+ * On any query error we reset the cached instance so the next
+ * call creates a fresh pool (handles rare pool-level failures).
+ */
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      _pool = mysql.createPool({
+        uri: process.env.DATABASE_URL,
+        waitForConnections: true,
+        connectionLimit: 5,
+        queueLimit: 0,
+        enableKeepAlive: true,
+        keepAliveInitialDelay: 30_000,
+      });
+      _db = drizzle(_pool);
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
+      console.warn("[Database] Failed to create pool:", error);
       _db = null;
+      _pool = null;
     }
   }
   return _db;
+}
+
+/** Force-reset the cached pool (call after a fatal connection error). */
+export function resetDb() {
+  if (_pool) {
+    _pool.end(() => {}); // mysql2 pool.end uses callback, not promise
+    _pool = null;
+  }
+  _db = null;
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {

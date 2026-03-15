@@ -100,3 +100,12 @@
 - [x] Add tournament.syncStatus tRPC procedure for real-time scheduler state
 - [x] Update Admin panel with live sync countdown and scheduler status (auto-refreshes every 15s)
 - [x] Write vitest tests for scheduler logic (28/28 passing)
+
+## Selection Sunday Readiness (March 15)
+- [x] Fix stale DB connection pool (done - mysql2 pool with keepAlive)
+- [x] Add resetDb() on fatal sync errors (done)
+- [x] Add admin "Update Teams" tool - paste real bracket at 7pm EST
+- [x] Add tRPC procedure: tournament.updateTeams (bulk upsert teams + clear picks)
+- [x] Add "Bracket Reset" option in admin (clear all user picks when real teams load)
+- [x] Run full tests and verify 0 TS errors (28/28 passing)
+- [x] Save checkpoint and publish

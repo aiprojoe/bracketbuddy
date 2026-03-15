@@ -28,8 +28,8 @@ import {
   upsertPick,
 } from "./db";
 import { getDb } from "./db";
-import { brackets, users, gameResults, tournamentConfig } from "../drizzle/schema";
-import { eq, sql, desc } from "drizzle-orm";
+import { brackets, users, gameResults, tournamentConfig, teams, picks } from "../drizzle/schema";
+import { eq, sql, desc, and } from "drizzle-orm";
 import { syncEspnScores, getLiveScores, getTournamentConfig } from "./espnSync";
 import { getSchedulerStatus, triggerImmediateSync } from "./syncScheduler";
 
@@ -525,6 +525,74 @@ IMPORTANT: Only output JSON. No other text.`,
         }
 
         return { success: true };
+      }),
+
+    // Admin: bulk-update teams with the real bracket (run after Selection Sunday reveal)
+    updateTeams: protectedProcedure
+      .input(z.object({
+        teams: z.array(z.object({
+          seed: z.number().min(1).max(16),
+          region: z.enum(["East", "West", "South", "Midwest"]),
+          name: z.string(),
+          shortName: z.string(),
+          conference: z.string().optional(),
+          isFirstFour: z.boolean().optional(),
+        })),
+        clearPicks: z.boolean().default(false),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
+        }
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+
+        let updated = 0;
+        let inserted = 0;
+
+        for (const t of input.teams) {
+          // Try to find existing team by seed+region
+          const existing = await db.select({ id: teams.id })
+            .from(teams)
+            .where(and(eq(teams.seed, t.seed), eq(teams.region, t.region)))
+            .limit(1);
+
+          if (existing.length > 0) {
+            await db.update(teams).set({
+              name: t.name,
+              shortName: t.shortName,
+              conference: t.conference ?? "",
+              isFirstFour: t.isFirstFour ?? false,
+            }).where(eq(teams.id, existing[0].id));
+            updated++;
+          } else {
+            await db.insert(teams).values({
+              seed: t.seed,
+              region: t.region,
+              name: t.name,
+              shortName: t.shortName,
+              conference: t.conference ?? "",
+              isFirstFour: t.isFirstFour ?? false,
+            });
+            inserted++;
+          }
+        }
+
+        // Optionally clear all picks so users start fresh with real teams
+        let picksCleared = 0;
+        if (input.clearPicks) {
+          // Get all 2026 bracket IDs first, then delete their picks
+          const bracketRows = await db.select({ id: brackets.id }).from(brackets).where(eq(brackets.year, 2026));
+          const bracketIds = bracketRows.map((b) => b.id);
+          if (bracketIds.length > 0) {
+            const result = await db.delete(picks).where(sql`${picks.bracketId} IN (${sql.join(bracketIds.map(id => sql`${id}`), sql`, `)})`);
+            picksCleared = result[0]?.affectedRows ?? 0;
+          }
+          // Reset bracket totals
+          await db.update(brackets).set({ totalPoints: 0, correctPicks: 0, totalPicks: 0 }).where(eq(brackets.year, 2026));
+        }
+
+        return { success: true, updated, inserted, picksCleared };
       }),
   }),
 });

@@ -26,6 +26,9 @@ import {
   Trophy,
   AlertTriangle,
   Loader2,
+  Users,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -47,9 +50,27 @@ function StatusBadge({ status }: { status: string }) {
   return <span className="px-2 py-0.5 rounded-full text-xs bg-white/10 text-white/40 border border-white/10">Scheduled</span>;
 }
 
+// Template for pasting in the real bracket — 68 teams in JSON format
+const TEAM_TEMPLATE = `[
+  { "seed": 1, "region": "East", "name": "Duke Blue Devils", "shortName": "Duke", "conference": "ACC" },
+  { "seed": 2, "region": "East", "name": "Alabama Crimson Tide", "shortName": "Alabama", "conference": "SEC" },
+  { "seed": 3, "region": "East", "name": "Wisconsin Badgers", "shortName": "Wisconsin", "conference": "Big Ten" },
+  { "seed": 4, "region": "East", "name": "Maryland Terrapins", "shortName": "Maryland", "conference": "Big Ten" },
+  { "seed": 1, "region": "West", "name": "Auburn Tigers", "shortName": "Auburn", "conference": "SEC" },
+  { "seed": 2, "region": "West", "name": "Michigan State Spartans", "shortName": "Michigan St", "conference": "Big Ten" },
+  { "seed": 1, "region": "South", "name": "Houston Cougars", "shortName": "Houston", "conference": "Big 12" },
+  { "seed": 2, "region": "South", "name": "Tennessee Volunteers", "shortName": "Tennessee", "conference": "SEC" },
+  { "seed": 1, "region": "Midwest", "name": "Florida Gators", "shortName": "Florida", "conference": "SEC" },
+  { "seed": 2, "region": "Midwest", "name": "St. John's Red Storm", "shortName": "St. John's", "conference": "Big East" }
+]`;
+
 export default function Admin() {
   const { user, isAuthenticated, loading } = useAuth();
   const [syncLog, setSyncLog] = useState<string[]>([]);
+  const [showUpdateTeams, setShowUpdateTeams] = useState(false);
+  const [teamsJson, setTeamsJson] = useState(TEAM_TEMPLATE);
+  const [clearPicks, setClearPicks] = useState(false);
+  const [jsonError, setJsonError] = useState<string | null>(null);
 
   const { data: config, refetch: refetchConfig } = trpc.tournament.config.useQuery();
   const { data: liveScores, refetch: refetchScores } = trpc.tournament.liveScores.useQuery();
@@ -88,6 +109,25 @@ export default function Admin() {
       toast.error(`Sync failed: ${err.message}`);
     },
   });
+
+  const updateTeamsMutation = trpc.tournament.updateTeams.useMutation({
+    onSuccess: (result) => {
+      toast.success(`✅ Teams updated! ${result.updated} updated, ${result.inserted} inserted${result.picksCleared > 0 ? `, ${result.picksCleared} picks cleared` : ""}`);
+      setShowUpdateTeams(false);
+    },
+    onError: (err) => toast.error(`Failed to update teams: ${err.message}`),
+  });
+
+  function handleUpdateTeams() {
+    setJsonError(null);
+    try {
+      const parsed = JSON.parse(teamsJson);
+      if (!Array.isArray(parsed)) throw new Error("Must be a JSON array");
+      updateTeamsMutation.mutate({ teams: parsed, clearPicks });
+    } catch (e: unknown) {
+      setJsonError(e instanceof Error ? e.message : "Invalid JSON");
+    }
+  }
 
   const lockMutation = trpc.tournament.setLocked.useMutation({
     onSuccess: (result) => {
@@ -347,6 +387,84 @@ export default function Admin() {
             </div>
           </div>
         )}
+
+        {/* ── Update Teams (Selection Sunday Tool) ── */}
+        <div className="rounded-xl border border-orange-500/30 bg-orange-500/5">
+          <button
+            onClick={() => setShowUpdateTeams(!showUpdateTeams)}
+            className="w-full flex items-center justify-between p-5 text-left"
+          >
+            <div className="flex items-center gap-3">
+              <Users size={20} className="text-orange-400" />
+              <div>
+                <h2 className="font-bold text-white text-lg">Update Teams — Selection Sunday</h2>
+                <p className="text-white/40 text-xs mt-0.5">Paste the real 2026 bracket JSON after the bracket is revealed at 7pm EST</p>
+              </div>
+            </div>
+            {showUpdateTeams ? <ChevronUp size={18} className="text-white/40" /> : <ChevronDown size={18} className="text-white/40" />}
+          </button>
+
+          {showUpdateTeams && (
+            <div className="px-5 pb-5 space-y-4 border-t border-orange-500/20 pt-4">
+              <p className="text-white/60 text-sm">
+                Paste a JSON array of team objects. Each team needs: <code className="text-orange-300 bg-white/5 px-1 rounded">seed</code>,{" "}
+                <code className="text-orange-300 bg-white/5 px-1 rounded">region</code> (East/West/South/Midwest),{" "}
+                <code className="text-orange-300 bg-white/5 px-1 rounded">name</code>,{" "}
+                <code className="text-orange-300 bg-white/5 px-1 rounded">shortName</code>.
+                Teams are matched by seed+region so existing user brackets stay intact.
+              </p>
+
+              <textarea
+                value={teamsJson}
+                onChange={(e) => { setTeamsJson(e.target.value); setJsonError(null); }}
+                rows={14}
+                className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-xs font-mono text-white/80 resize-y focus:outline-none focus:border-orange-500/50"
+                placeholder="Paste JSON array here..."
+              />
+
+              {jsonError && (
+                <div className="flex items-center gap-2 text-red-400 text-sm">
+                  <XCircle size={14} />
+                  {jsonError}
+                </div>
+              )}
+
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={clearPicks}
+                  onChange={(e) => setClearPicks(e.target.checked)}
+                  className="w-4 h-4 rounded border-white/20 bg-white/5 accent-orange-500"
+                />
+                <div>
+                  <span className="text-white text-sm font-semibold">Clear all user picks after update</span>
+                  <p className="text-white/40 text-xs">Check this if teams changed significantly — users will need to re-pick their brackets</p>
+                </div>
+              </label>
+
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={handleUpdateTeams}
+                  disabled={updateTeamsMutation.isPending}
+                  className="bg-orange-600 hover:bg-orange-500 text-white font-bold"
+                >
+                  {updateTeamsMutation.isPending ? (
+                    <><Loader2 size={16} className="mr-2 animate-spin" /> Updating...</>
+                  ) : (
+                    <><Users size={16} className="mr-2" /> Update {(() => { try { return JSON.parse(teamsJson).length; } catch { return "??"; } })()} Teams</>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowUpdateTeams(false)}
+                  className="text-white/60 border-white/10"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Empty state */}
         {!liveScores?.length && (
