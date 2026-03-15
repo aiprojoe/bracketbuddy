@@ -156,3 +156,11 @@
 - [x] Fix rarity-*-bg CSS classes (border was not applying correctly)
 - [x] Fix achievement card class in Profile page (rarity-*-bg pattern)
 - [x] Run TypeScript check and all tests (0 errors, 28/28 passing)
+
+## Bracket Pick Flow Fix
+- [x] Fix Matchup component: allow clicking a team even when opponent is TBD (was requiring both teams)
+- [x] Fix onPick handler in bracket render: remove `if (!t1 || !t2) return` guard
+- [x] Fix Final Four onPick handler: same TBD-blocking guard removed
+- [x] Fix Championship onPick handler: same TBD-blocking guard removed
+- [x] Fix voice-to-pick handler: allow voice picks when one team is TBD
+- [x] 0 TypeScript errors, 28/28 tests passing

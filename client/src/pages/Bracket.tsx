@@ -100,14 +100,16 @@ function Matchup({
   matchupId: string;
   hintText?: string;
 }) {
-  const isTBD = !team1 || !team2;
+  // A matchup is fully TBD (no teams at all) — show locked placeholder
+  const bothTBD = !team1 && !team2;
   return (
-    <div className={`flex flex-col gap-0.5 min-w-[130px] max-w-[150px] ${isTBD ? "opacity-60" : ""}`}>
+    <div className={`flex flex-col gap-0.5 min-w-[130px] max-w-[150px] ${bothTBD ? "opacity-50" : ""}`}>
       <TeamSlot
         team={team1}
         picked={pickedTeamId === team1?.id}
         eliminated={eliminatedTeamId === team1?.id}
-        onClick={team1 && team2 ? () => onPick(team1.id, team1.seed, team2?.seed ?? null) : undefined}
+        // Allow picking team1 even if team2 is TBD
+        onClick={team1 ? () => onPick(team1.id, team1.seed, team2?.seed ?? null) : undefined}
         hintText={!team1 ? hintText : undefined}
       />
       <div className="text-center text-[10px] text-white/20 leading-none">vs</div>
@@ -115,7 +117,8 @@ function Matchup({
         team={team2}
         picked={pickedTeamId === team2?.id}
         eliminated={eliminatedTeamId === team2?.id}
-        onClick={team2 && team1 ? () => onPick(team2.id, team1?.seed ?? 99, team2.seed) : undefined}
+        // Allow picking team2 even if team1 is TBD
+        onClick={team2 ? () => onPick(team2.id, team1?.seed ?? 99, team2.seed) : undefined}
         hintText={!team2 ? hintText : undefined}
       />
     </div>
@@ -407,13 +410,15 @@ export default function Bracket() {
             for (const round of allRounds) {
               const matchups = getMatchupsForRound(region, round);
               for (const m of matchups) {
-                if (!m.team1 || !m.team2) continue;
-                if (m.team1.id === teamId || m.team2.id === teamId) {
-                  // Only pick if this matchup hasn't been decided yet OR we're changing the pick
+                // Skip if neither team is present
+                if (!m.team1 && !m.team2) continue;
+                if (m.team1?.id === teamId || m.team2?.id === teamId) {
                   const t1 = m.team1;
                   const t2 = m.team2;
-                  handlePick(m.id, teamId, round, t1.id, t2.id, t1.seed, t2.seed);
-                  setActiveRegion(region); // Navigate to the region
+                  const t1Seed = t1?.seed ?? 99;
+                  const t2Seed = t2?.seed ?? null;
+                  handlePick(m.id, teamId, round, t1?.id ?? teamId, t2?.id ?? null, t1Seed, t2Seed);
+                  setActiveRegion(region);
                   picked = true;
                   break;
                 }
@@ -427,9 +432,9 @@ export default function Bracket() {
           if (!picked) {
             const ffMatchups = getFinalFourMatchups();
             for (const m of ffMatchups) {
-              if (!m.team1 || !m.team2) continue;
-              if (m.team1.id === teamId || m.team2.id === teamId) {
-                handlePick(m.id, teamId, "finalfour", m.team1.id, m.team2.id, m.team1.seed, m.team2.seed);
+              if (!m.team1 && !m.team2) continue;
+              if (m.team1?.id === teamId || m.team2?.id === teamId) {
+                handlePick(m.id, teamId, "finalfour", m.team1?.id ?? teamId, m.team2?.id ?? null, m.team1?.seed ?? 99, m.team2?.seed ?? null);
                 picked = true;
                 break;
               }
@@ -525,8 +530,20 @@ export default function Bracket() {
                           onPick={(teamId, t1Seed, t2Seed) => {
                             const t1 = m.team1;
                             const t2 = m.team2;
-                            if (!t1 || !t2) return;
-                            handlePick(m.id, teamId, round, t1.id, t2.id, t1Seed, t2Seed);
+                            // Allow picking even when opponent is TBD
+                            // At least one team must be present (the one being picked)
+                            if (!t1 && !t2) return;
+                            const pickedTeam = t1?.id === teamId ? t1 : t2;
+                            if (!pickedTeam) return;
+                            handlePick(
+                              m.id,
+                              teamId,
+                              round,
+                              t1?.id ?? teamId,
+                              t2?.id ?? null,
+                              t1Seed,
+                              t2Seed
+                            );
                           }}
                           matchupId={m.id}
                           hintText={hintText}
@@ -601,8 +618,12 @@ export default function Bracket() {
                       team2={m.team2}
                       pickedTeamId={picks[m.id]}
                       onPick={(teamId, t1Seed, t2Seed) => {
-                        if (!m.team1 || !m.team2) return;
-                        handlePick(m.id, teamId, "finalfour", m.team1.id, m.team2.id, t1Seed, t2Seed);
+                        if (!m.team1 && !m.team2) return;
+                        handlePick(
+                          m.id, teamId, "finalfour",
+                          m.team1?.id ?? teamId, m.team2?.id ?? null,
+                          t1Seed, t2Seed
+                        );
                       }}
                       matchupId={m.id}
                     />
@@ -628,8 +649,12 @@ export default function Bracket() {
                     team2={m.team2}
                     pickedTeamId={picks[m.id]}
                     onPick={(teamId, t1Seed, t2Seed) => {
-                      if (!m.team1 || !m.team2) return;
-                      handlePick(m.id, teamId, "championship", m.team1.id, m.team2.id, t1Seed, t2Seed);
+                      if (!m.team1 && !m.team2) return;
+                      handlePick(
+                        m.id, teamId, "championship",
+                        m.team1?.id ?? teamId, m.team2?.id ?? null,
+                        t1Seed, t2Seed
+                      );
                     }}
                     matchupId={m.id}
                   />
