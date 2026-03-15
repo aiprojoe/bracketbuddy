@@ -135,3 +135,10 @@
 - [x] Add "Want an app like this?" CTA in footer
 - [x] Add footer to App.tsx so it appears on all pages
 - [x] Run TypeScript check and save checkpoint (0 errors)
+
+## Share Button Feature
+- [x] Build ShareBracketModal component with Twitter/X, Facebook, copy-link, and Web Share API
+- [x] Add share button to Bracket page floating CTA (visible after 10+ picks)
+- [x] Share modal wired to bracketData.shareToken for permanent shareable link
+- [x] Generate dynamic share text with user's champion pick and points
+- [x] Run TypeScript check (0 errors) and save checkpoint

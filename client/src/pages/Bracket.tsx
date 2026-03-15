@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useConfetti } from "@/hooks/useConfetti";
 import { toast } from "sonner";
 import { Mic, Zap, Share2, RotateCcw, ChevronRight, Trophy, Sparkles, Swords } from "lucide-react";
+import ShareBracketModal from "@/components/ShareBracketModal";
 import { type TeamData, SEED_PAIRS_R64, type Region, type Round } from "../../../shared/bracketData";
 import VoiceAssistant from "@/components/VoiceAssistant";
 import AIAnalysis from "@/components/AIAnalysis";
@@ -119,6 +120,7 @@ export default function Bracket() {
   const [showAI, setShowAI] = useState(false);
   const [activeRegion, setActiveRegion] = useState<Region>("East");
   const [totalPicks, setTotalPicks] = useState(0);
+  const [showShare, setShowShare] = useState(false);
 
   const { data: teamsData } = trpc.teams.getAll.useQuery();
   const { data: bracketData, refetch: refetchBracket } = trpc.bracket.getMine.useQuery(undefined, {
@@ -645,17 +647,29 @@ export default function Bracket() {
               Challenge a Friend
             </Button>
           </Link>
-          <Link href="/profile">
-            <Button className="bg-[oklch(0.55_0.2_250)] hover:bg-[oklch(0.62_0.22_250)] text-white font-bold shadow-2xl glow-blue">
-              <Share2 size={16} className="mr-2" />
-              Share My Bracket
-            </Button>
-          </Link>
+          <Button
+            onClick={() => setShowShare(true)}
+            className="bg-[oklch(0.55_0.2_250)] hover:bg-[oklch(0.62_0.22_250)] text-white font-bold shadow-2xl glow-blue"
+          >
+            <Share2 size={16} className="mr-2" />
+            Share My Bracket
+          </Button>
         </div>
       )}
 
       {/* AI Analysis Modal */}
       {showAI && <AIAnalysis onClose={() => setShowAI(false)} />}
+
+      {/* Share Modal */}
+      <ShareBracketModal
+        open={showShare}
+        onClose={() => setShowShare(false)}
+        shareToken={bracketData?.bracket.shareToken ?? undefined}
+        userName={user?.name ?? undefined}
+        championPick={champion?.name}
+        totalPoints={bracketData?.bracket.totalPoints ?? 0}
+        completionPct={progressPct}
+      />
     </div>
   );
 }
