@@ -321,3 +321,8 @@
 - [x] Fix First Four tab label dates in Bracket.tsx
 - [x] Fix email templates: welcome email and lock reminder dates (March 19 + per-game locking language)
 - [x] Verify autoFill isUpset fix is already applied (winnerTeam.seed > loserTeam.seed confirmed)
+
+## OAuth Callback URL Fix
+- [x] Replace req.protocol + req.get("host") with APP_URL env var in /api/oauth/google route
+- [x] Replace req.protocol + req.get("host") with APP_URL env var in /api/oauth/callback route
+- [x] Add APP_URL=https://bracketbuddy.unrivaledbusinesssolutions.com secret

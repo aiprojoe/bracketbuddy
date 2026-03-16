@@ -31,7 +31,8 @@ export function registerOAuthRoutes(app: Express) {
   // Google OAuth initiation — frontend redirects here to start sign-in
   app.get("/api/oauth/google", (req: Request, res: Response) => {
     const returnTo = getQueryParam(req, "returnTo") ?? "/";
-    const redirectUri = `${req.protocol}://${req.get("host")}/api/oauth/callback`;
+    const appUrl = process.env.APP_URL?.replace(/\/$/, "") ?? `${req.protocol}://${req.get("host")}`;
+    const redirectUri = `${appUrl}/api/oauth/callback`;
     const state = Buffer.from(JSON.stringify({ redirectUri, returnTo })).toString("base64url");
     const authUrl = getGoogleAuthUrl(redirectUri, state);
     res.redirect(302, authUrl);
@@ -47,7 +48,8 @@ export function registerOAuthRoutes(app: Express) {
       return;
     }
 
-    let redirectUri = `${req.protocol}://${req.get("host")}/api/oauth/callback`;
+    const appUrl = process.env.APP_URL?.replace(/\/$/, "") ?? `${req.protocol}://${req.get("host")}`;
+    let redirectUri = `${appUrl}/api/oauth/callback`;
     let returnTo = "/";
 
     try {
