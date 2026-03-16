@@ -14,6 +14,7 @@ import ChallengeH2H from "./pages/ChallengeH2H";
 import Challenges from "./pages/Challenges";
 import Admin from "./pages/Admin";
 import PrintBracket from "./pages/PrintBracket";
+import UBSFooter from "./components/UBSFooter";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -52,6 +53,7 @@ function App() {
           <Toaster />
           <div className="flex flex-col min-h-screen">
             <Router />
+            <UBSFooter />
           </div>
         </TooltipProvider>
       </ThemeProvider>

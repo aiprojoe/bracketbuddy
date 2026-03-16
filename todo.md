@@ -197,3 +197,7 @@
 - [x] Replace manus.space URL in PrintBracket header and footer with bracketbuddy.unrivaledbusinesssolutions.com
 - [ ] Save checkpoint and publish
 - [ ] Provide DNS CNAME instructions for bracketbuddy.unrivaledbusinesssolutions.com
+
+## UBS Footer & Branding
+- [x] Add Unrivaled Business Solutions footer to all pages (link to www.unrivaledbusinesssolutions.com)
+- [x] Footer style: minimal, dark, enterprise — no Manus references anywhere
