@@ -271,3 +271,12 @@
 - [x] Query DB for current teams and identify all duplicates/errors (NC State duplicate found)
 - [x] Push corrected 68-team JSON to database (14 corrections made)
 - [x] Verify no duplicates remain (57/57 matchup checks passed)
+
+## Production Accuracy Audit & Hardening
+- [x] Audit pick preservation: confirm no picks lost on team update, bracket reset, or server restart
+- [x] Implement per-game tip-off locking (lock each game individually when it tips off, not all at once)
+- [x] Add 2026 First Round tip-off schedule to server (all 32 games with exact times)
+- [x] Lock picks for a specific game when that game's tip-off time passes
+- [x] Verify leaderboard accuracy: scoring engine, point totals, tiebreakers — correctPicks tiebreaker added
+- [x] Audit ESPN sync: confirm team name matching is robust (no missed scores)
+- [x] Run full test suite and fix any failures (35/35 passing, 0 TS errors)

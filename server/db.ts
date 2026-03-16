@@ -309,15 +309,18 @@ export async function upsertPick(data: {
 export async function getLeaderboard(limit = 50) {
   const db = await getDb();
   if (!db) return [];
+  // Join brackets to get correctPicks for tiebreaking display
   return db
     .select({
       id: users.id,
       name: users.name,
       totalPoints: users.totalPoints,
       bracketCount: users.bracketCount,
+      correctPicks: brackets.correctPicks,
     })
     .from(users)
-    .orderBy(desc(users.totalPoints))
+    .leftJoin(brackets, and(eq(brackets.userId, users.id), eq(brackets.year, 2026)))
+    .orderBy(desc(users.totalPoints), desc(brackets.correctPicks))
     .limit(limit);
 }
 

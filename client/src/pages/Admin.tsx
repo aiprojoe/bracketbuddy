@@ -183,6 +183,12 @@ export default function Admin() {
     try {
       const parsed = JSON.parse(teamsJson);
       if (!Array.isArray(parsed)) throw new Error("Must be a JSON array");
+      if (clearPicks) {
+        const confirmed = window.confirm(
+          "\u26a0\ufe0f WARNING: This will permanently delete ALL user picks for every bracket. This cannot be undone.\n\nAre you absolutely sure you want to clear all picks?"
+        );
+        if (!confirmed) return;
+      }
       updateTeamsMutation.mutate({ teams: parsed, clearPicks });
     } catch (e: unknown) {
       setJsonError(e instanceof Error ? e.message : "Invalid JSON");

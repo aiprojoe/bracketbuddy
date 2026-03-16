@@ -1,6 +1,7 @@
 import { COOKIE_NAME } from "@shared/const";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { isMatchupLocked } from "../shared/tipoffSchedule";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { invokeLLM } from "./_core/llm";
 import { systemRouter } from "./_core/systemRouter";
@@ -132,6 +133,14 @@ export const appRouter = router({
         }
         if (bracketRows[0].isLocked) {
           throw new TRPCError({ code: "FORBIDDEN", message: "Bracket is locked" });
+        }
+
+        // Per-game tip-off lock: block picks for games that have already tipped off
+        if (isMatchupLocked(input.matchupId)) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "This game has already tipped off — picks are locked for this matchup.",
+          });
         }
 
         // Determine if this is an upset (higher seed number = lower seed)

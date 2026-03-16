@@ -148,7 +148,9 @@ export default function Leaderboard() {
                         )}
                       </div>
                       <div className="text-xs text-white/40">
-                        {entry.bracketCount ?? 0} bracket{(entry.bracketCount ?? 0) !== 1 ? "s" : ""}
+                        {(entry.correctPicks ?? 0) > 0
+                          ? `${entry.correctPicks} correct pick${(entry.correctPicks ?? 0) !== 1 ? "s" : ""}`
+                          : `${entry.bracketCount ?? 0} bracket${(entry.bracketCount ?? 0) !== 1 ? "s" : ""}`}
                       </div>
                     </div>
 
