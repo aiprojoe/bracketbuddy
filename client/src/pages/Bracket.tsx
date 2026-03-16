@@ -6,13 +6,17 @@ import { trpc } from "@/lib/trpc";
 import { useState, useEffect, useCallback } from "react";
 import { useConfetti } from "@/hooks/useConfetti";
 import { toast } from "sonner";
-import { Mic, Zap, Share2, RotateCcw, ChevronRight, Trophy, Sparkles, Swords } from "lucide-react";
+import { Mic, Zap, Share2, RotateCcw, ChevronRight, Trophy, Sparkles, Swords, Printer, Wand2, Info } from "lucide-react";
 import ShareBracketModal from "@/components/ShareBracketModal";
-import { type TeamData, SEED_PAIRS_R64, type Region, type Round } from "../../../shared/bracketData";
+import { type TeamData, SEED_PAIRS_R64, type Region, type Round, getUpsetProbability } from "../../../shared/bracketData";
 import VoiceAssistant from "@/components/VoiceAssistant";
 import AIAnalysis from "@/components/AIAnalysis";
 import LiveScoresBanner from "@/components/LiveScoresBanner";
 import { Link } from "wouter";
+import AutoFillModal from "@/components/AutoFillModal";
+import FactsTicker from "@/components/FactsTicker";
+import ScoreTracker from "@/components/ScoreTracker";
+import TeamInfoTooltip from "@/components/TeamInfoTooltip";
 
 type PicksMap = Record<string, number>; // matchupId -> pickedTeamId
 
@@ -102,25 +106,57 @@ function Matchup({
 }) {
   // A matchup is fully TBD (no teams at all) — show locked placeholder
   const bothTBD = !team1 && !team2;
+
+  // Upset badge: show if lower seed has meaningful upset chance
+  const upsetChance = team1 && team2 ? getUpsetProbability(Math.min(team1.seed, team2.seed), Math.max(team1.seed, team2.seed)) : 0;
+  const showUpsetBadge = upsetChance >= 25;
+
   return (
     <div className={`flex flex-col gap-0.5 min-w-[130px] max-w-[150px] ${bothTBD ? "opacity-50" : ""}`}>
-      <TeamSlot
-        team={team1}
-        picked={pickedTeamId === team1?.id}
-        eliminated={eliminatedTeamId === team1?.id}
-        // Allow picking team1 even if team2 is TBD
-        onClick={team1 ? () => onPick(team1.id, team1.seed, team2?.seed ?? null) : undefined}
-        hintText={!team1 ? hintText : undefined}
-      />
-      <div className="text-center text-[10px] text-white/20 leading-none">vs</div>
-      <TeamSlot
-        team={team2}
-        picked={pickedTeamId === team2?.id}
-        eliminated={eliminatedTeamId === team2?.id}
-        // Allow picking team2 even if team1 is TBD
-        onClick={team2 ? () => onPick(team2.id, team1?.seed ?? 99, team2.seed) : undefined}
-        hintText={!team2 ? hintText : undefined}
-      />
+      {team1 ? (
+        <TeamInfoTooltip team={team1} opponent={team2}>
+          <TeamSlot
+            team={team1}
+            picked={pickedTeamId === team1?.id}
+            eliminated={eliminatedTeamId === team1?.id}
+            onClick={team1 ? () => onPick(team1.id, team1.seed, team2?.seed ?? null) : undefined}
+            hintText={!team1 ? hintText : undefined}
+          />
+        </TeamInfoTooltip>
+      ) : (
+        <TeamSlot
+          team={undefined}
+          picked={false}
+          eliminated={false}
+          hintText={hintText}
+        />
+      )}
+      <div className="text-center text-[10px] text-white/20 leading-none flex items-center justify-center gap-1">
+        <span>vs</span>
+        {showUpsetBadge && (
+          <span className="text-[8px] text-[oklch(0.55_0.2_250)] font-bold" title={`${upsetChance}% upset chance`}>
+            🔥{upsetChance}%
+          </span>
+        )}
+      </div>
+      {team2 ? (
+        <TeamInfoTooltip team={team2} opponent={team1}>
+          <TeamSlot
+            team={team2}
+            picked={pickedTeamId === team2?.id}
+            eliminated={eliminatedTeamId === team2?.id}
+            onClick={team2 ? () => onPick(team2.id, team1?.seed ?? 99, team2.seed) : undefined}
+            hintText={!team2 ? hintText : undefined}
+          />
+        </TeamInfoTooltip>
+      ) : (
+        <TeamSlot
+          team={undefined}
+          picked={false}
+          eliminated={false}
+          hintText={hintText}
+        />
+      )}
     </div>
   );
 }
@@ -135,6 +171,7 @@ export default function Bracket() {
   const [totalPicks, setTotalPicks] = useState(0);
   const [showShare, setShowShare] = useState(false);
   const [showVoicePanel, setShowVoicePanel] = useState(false);
+  const [showAutoFill, setShowAutoFill] = useState(false);
 
   const { data: teamsData } = trpc.teams.getAll.useQuery();
   const { data: bracketData, refetch: refetchBracket } = trpc.bracket.getMine.useQuery(undefined, {
@@ -142,6 +179,7 @@ export default function Bracket() {
   });
   const createBracket = trpc.bracket.create.useMutation();
   const makePick = trpc.bracket.makePick.useMutation();
+  const resetPicks = trpc.bracket.resetPicks.useMutation();
 
   const teams = teamsData ?? [];
 
@@ -370,6 +408,26 @@ export default function Bracket() {
               </Button>
 
               <Button
+                onClick={() => setShowAutoFill(true)}
+                variant="outline"
+                size="sm"
+                className="border-[oklch(0.78_0.18_80/0.4)] text-[oklch(0.78_0.18_80)] hover:bg-[oklch(0.78_0.18_80/0.1)] bg-transparent hidden sm:flex"
+              >
+                <Wand2 size={14} className="mr-1" />
+                Auto-Fill
+              </Button>
+
+              <Button
+                onClick={() => window.open("/bracket/print", "_blank")}
+                variant="outline"
+                size="sm"
+                className="border-white/15 text-white/50 hover:text-white hover:border-white/30 bg-transparent hidden sm:flex"
+              >
+                <Printer size={14} className="mr-1" />
+                Print
+              </Button>
+
+              <Button
                 onClick={() => setShowVoicePanel(true)}
                 size="sm"
                 className="bg-[oklch(0.65_0.22_35/0.2)] text-[oklch(0.65_0.22_35)] border border-[oklch(0.65_0.22_35/0.4)] hover:bg-[oklch(0.65_0.22_35/0.3)] font-bold"
@@ -481,6 +539,12 @@ export default function Bracket() {
 
       {/* Bracket Content */}
       <div className="max-w-full mx-auto px-4 py-6 overflow-x-auto">
+        {/* Facts Ticker + Score Tracker sidebar */}
+        <div className="mb-4 max-w-2xl">
+          <FactsTicker />
+          <ScoreTracker />
+        </div>
+
         {/* Mobile scroll hint */}
         <div className="flex items-center gap-2 text-white/30 text-xs mb-3 sm:hidden">
           <span>←</span>
@@ -716,6 +780,16 @@ export default function Bracket() {
       {/* AI Analysis Modal */}
       {showAI && <AIAnalysis onClose={() => setShowAI(false)} />}
 
+      {/* Auto-Fill Modal */}
+      <AutoFillModal
+        open={showAutoFill}
+        onClose={() => setShowAutoFill(false)}
+        onFilled={() => {
+          refetchBracket();
+          toast.success("Bracket filled! Edit any picks you want to change.");
+        }}
+      />
+
       {/* Share Modal */}
       <ShareBracketModal
         open={showShare}
@@ -726,6 +800,27 @@ export default function Bracket() {
         totalPoints={bracketData?.bracket.totalPoints ?? 0}
         completionPct={progressPct}
       />
+
+      {/* Reset Picks button (bottom left, only when picks exist) */}
+      {totalPicks > 0 && (
+        <button
+          onClick={async () => {
+            if (!confirm("Reset all picks? This cannot be undone.")) return;
+            try {
+              await resetPicks.mutateAsync();
+              setPicks({});
+              setTotalPicks(0);
+              toast.success("All picks cleared!");
+            } catch {
+              toast.error("Failed to reset picks");
+            }
+          }}
+          className="fixed bottom-6 left-6 z-50 flex items-center gap-1.5 text-xs text-white/30 hover:text-white/60 transition-colors"
+        >
+          <RotateCcw size={12} />
+          Reset picks
+        </button>
+      )}
     </div>
   );
 }

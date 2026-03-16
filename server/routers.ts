@@ -173,6 +173,135 @@ export const appRouter = router({
         return { success: true, isUpset };
       }),
 
+    // Auto-fill bracket by mode: chalk (best seeds), random, or upset-heavy
+    autoFill: protectedProcedure
+      .input(z.object({ mode: z.enum(["chalk", "random", "upset"]) }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const bracket = await getUserBracket(ctx.user.id);
+        if (!bracket) throw new TRPCError({ code: "NOT_FOUND", message: "No bracket found" });
+        if (bracket.isLocked) throw new TRPCError({ code: "FORBIDDEN", message: "Bracket is locked" });
+
+        const allTeams = await getAllTeams();
+        const SEED_PAIRS_R64 = [[1,16],[8,9],[5,12],[4,13],[6,11],[3,14],[7,10],[2,15]];
+        const REGIONS = ["East", "West", "South", "Midwest"] as const;
+        const ROUNDS = ["round64", "round32", "sweet16", "elite8"] as const;
+
+        // Historical upset rates for random/upset mode
+        const UPSET_RATES: Record<number, number> = {
+          1:1,2:6,3:15,4:21,5:35,6:37,7:39,8:51,9:49,10:61,11:63,12:65,13:79,14:85,15:94,16:99
+        };
+
+        function pickWinner(t1Seed: number, t2Seed: number, mode: string): number {
+          const fav = Math.min(t1Seed, t2Seed);
+          const dog = Math.max(t1Seed, t2Seed);
+          if (mode === "chalk") return fav;
+          const dogWinPct = UPSET_RATES[dog] ?? 50;
+          if (mode === "upset") {
+            // Upset mode: weight toward upsets but not always
+            return Math.random() * 100 < Math.min(dogWinPct * 2, 70) ? dog : fav;
+          }
+          // Random: use historical rates
+          return Math.random() * 100 < dogWinPct ? dog : fav;
+        }
+
+        type TeamEntry = { id: number; seed: number; region: string };
+        const picksToSave: Array<{ matchupId: string; round: string; team1: TeamEntry; team2: TeamEntry; winnerId: number }> = [];
+
+        // Build picks for each region
+        for (const region of REGIONS) {
+          const regionTeams = allTeams.filter((t) => t.region === region);
+          const getTeam = (seed: number) => regionTeams.find((t) => t.seed === seed);
+
+          // Track current round's winners
+          let currentRoundTeams: (TeamEntry | undefined)[] = SEED_PAIRS_R64.flatMap(([s1, s2]) => [
+            getTeam(s1), getTeam(s2)
+          ]);
+
+          for (let ri = 0; ri < ROUNDS.length; ri++) {
+            const round = ROUNDS[ri];
+            const nextRoundTeams: (TeamEntry | undefined)[] = [];
+            for (let i = 0; i < currentRoundTeams.length; i += 2) {
+              const t1 = currentRoundTeams[i];
+              const t2 = currentRoundTeams[i + 1];
+              if (!t1 || !t2) { nextRoundTeams.push(undefined); continue; }
+              const winnerSeed = pickWinner(t1.seed, t2.seed, input.mode);
+              const winner = winnerSeed === t1.seed ? t1 : t2;
+              const matchupId = `${region}-${round}-${Math.floor(i / 2)}`;
+              picksToSave.push({ matchupId, round, team1: t1, team2: t2, winnerId: winner.id });
+              nextRoundTeams.push(winner);
+            }
+            currentRoundTeams = nextRoundTeams;
+          }
+        }
+
+        // Final Four: East vs West, South vs Midwest
+        const regionWinners: Record<string, TeamEntry | undefined> = {};
+        for (const region of REGIONS) {
+          const e8Picks = picksToSave.filter((p) => p.matchupId === `${region}-elite8-0`);
+          if (e8Picks[0]) {
+            regionWinners[region] = allTeams.find((t) => t.id === e8Picks[0].winnerId);
+          }
+        }
+
+        const ffPairs = [["East", "West"], ["South", "Midwest"]] as const;
+        const ffWinners: (TeamEntry | undefined)[] = [];
+        for (let i = 0; i < ffPairs.length; i++) {
+          const [r1, r2] = ffPairs[i];
+          const t1 = regionWinners[r1];
+          const t2 = regionWinners[r2];
+          if (t1 && t2) {
+            const winnerSeed = pickWinner(t1.seed, t2.seed, input.mode);
+            const winner = winnerSeed === t1.seed ? t1 : t2;
+            picksToSave.push({ matchupId: `FinalFour-${i}`, round: "finalfour", team1: t1, team2: t2, winnerId: winner.id });
+            ffWinners.push(winner);
+          } else {
+            ffWinners.push(undefined);
+          }
+        }
+
+        // Championship
+        const ct1 = ffWinners[0];
+        const ct2 = ffWinners[1];
+        if (ct1 && ct2) {
+          const winnerSeed = pickWinner(ct1.seed, ct2.seed, input.mode);
+          const winner = winnerSeed === ct1.seed ? ct1 : ct2;
+          picksToSave.push({ matchupId: "Championship-0", round: "championship", team1: ct1, team2: ct2, winnerId: winner.id });
+        }
+
+        // Save all picks via upsert
+        for (const p of picksToSave) {
+          const isUpset = p.winnerId === p.team2.id && p.team2.seed > p.team1.seed
+            ? false // team2 is always higher seed in our setup
+            : false;
+          await upsertPick({
+            bracketId: bracket.id,
+            userId: ctx.user.id,
+            round: p.round as any,
+            matchupId: p.matchupId,
+            team1Id: p.team1.id,
+            team2Id: p.team2.id,
+            pickedTeamId: p.winnerId,
+            isUpset,
+          });
+        }
+
+        return { success: true, picksCount: picksToSave.length };
+      }),
+
+    // Reset all picks for the user's bracket
+    resetPicks: protectedProcedure.mutation(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const bracket = await getUserBracket(ctx.user.id);
+      if (!bracket) throw new TRPCError({ code: "NOT_FOUND" });
+      if (bracket.isLocked) throw new TRPCError({ code: "FORBIDDEN", message: "Bracket is locked" });
+      await db.delete(picks).where(eq(picks.bracketId, bracket.id));
+      await db.update(brackets).set({ totalPoints: 0, correctPicks: 0, totalPicks: 0, isComplete: false }).where(eq(brackets.id, bracket.id));
+      return { success: true };
+    }),
+
     getByShareToken: publicProcedure
       .input(z.object({ token: z.string() }))
       .query(async ({ input }) => {

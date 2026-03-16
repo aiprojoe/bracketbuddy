@@ -13,6 +13,7 @@ import ChallengeInvite from "./pages/ChallengeInvite";
 import ChallengeH2H from "./pages/ChallengeH2H";
 import Challenges from "./pages/Challenges";
 import Admin from "./pages/Admin";
+import PrintBracket from "./pages/PrintBracket";
 import PoweredByFooter from "./components/PoweredByFooter";
 
 function Router() {
@@ -28,6 +29,7 @@ function Router() {
       <Route path={"/challenge/invite/:token"} component={ChallengeInvite} />
       <Route path={"/challenge/:id/h2h"} component={ChallengeH2H} />
       <Route path={"/admin"} component={Admin} />
+      <Route path={"/bracket/print"} component={PrintBracket} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

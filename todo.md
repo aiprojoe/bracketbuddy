@@ -164,3 +164,18 @@
 - [x] Fix Championship onPick handler: same TBD-blocking guard removed
 - [x] Fix voice-to-pick handler: allow voice picks when one team is TBD
 - [x] 0 TypeScript errors, 28/28 tests passing
+
+## Feature Upgrade Sprint (Best-of-Sites + Print + Pick Preservation)
+- [x] Fix pick preservation: updateTeams already uses clearPicks=false default; team updates by seed+region preserve team IDs so picks survive (verified)
+- [x] Add seed matchup history data to shared bracketData.ts (SEED_WIN_RATES_R64, getUpsetProbability, getSeedMatchupLabel)
+- [x] Add upset probability badge to each matchup slot (🔥35% shown inline between teams)
+- [x] Build TeamInfoTooltip component: hover/tap team to see PPG, record, seed history, conference, upset chance
+- [x] Add team info tooltip on all bracket matchups (hover/tap to see team stats)
+- [x] Build printable bracket view: /bracket/print route with print-optimized CSS (landscape, 2x2 grid)
+- [x] Add "Print" button to bracket page header (opens /bracket/print in new tab)
+- [x] Add auto-fill bracket feature: Chalk / Chaos Mode / Upset Special modes with AutoFillModal
+- [x] Add "Auto-Fill" button to bracket page header
+- [x] Add FactsTicker component: rotating March Madness trivia above bracket
+- [x] Add ScoreTracker component: correct/incorrect picks with round breakdown (collapses when no games played)
+- [x] Add "Reset picks" button (bottom-left, only when picks exist)
+- [x] 0 TypeScript errors, 28/28 tests passing
