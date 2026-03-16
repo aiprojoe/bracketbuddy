@@ -257,3 +257,11 @@
 - [x] All login buttons across app automatically use new Google sign-in (no per-page changes needed)
 - [x] Write vitest tests for Google OAuth config (3 new tests, 31 total passing)
 - [ ] Publish to live domain
+
+## Launch Sprint
+- [x] Auto-assign admin role to owner's Google account on first login
+- [x] Add OWNER_EMAIL env var so owner is recognized by email (not just openId)
+- [x] Integrate Resend email service (welcome email + bracket lock reminder)
+- [x] Add "Send Lock Reminder" button in Admin panel (emails all users before March 20)
+- [x] Add welcome email sent on first sign-in
+- [x] Run all tests, 0 TS errors, save checkpoint, publish

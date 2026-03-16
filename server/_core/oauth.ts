@@ -5,6 +5,8 @@ import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
 import { ENV } from "./env";
 import axios from "axios";
+import { sendWelcomeEmail } from "../email";
+import { getUserByOpenId } from "../db";
 
 function getQueryParam(req: Request, key: string): string | undefined {
   const value = req.query[key];
@@ -96,6 +98,10 @@ export function registerOAuthRoutes(app: Express) {
       // Prefix openId with "google:" to avoid collisions with Manus openIds
       const openId = `google:${googleUser.sub}`;
 
+      // Check if this is a first-time sign-in before upserting
+      const existingUser = await getUserByOpenId(openId);
+      const isNewUser = !existingUser;
+
       await db.upsertUser({
         openId,
         name: googleUser.name ?? null,
@@ -103,6 +109,11 @@ export function registerOAuthRoutes(app: Express) {
         loginMethod: "google",
         lastSignedIn: new Date(),
       });
+
+      // Send welcome email to new users
+      if (isNewUser && googleUser.email) {
+        sendWelcomeEmail(googleUser.email, googleUser.name ?? "Bracket Fan").catch(console.error);
+      }
 
       const sessionToken = await sdk.createSessionToken(openId, {
         name: googleUser.name ?? "",

@@ -189,6 +189,16 @@ export default function Admin() {
     }
   }
 
+  const sendLockRemindersMutation = trpc.email.sendLockReminders.useMutation({
+    onSuccess: (result) => toast.success(`📧 Sent ${result.sent} reminder emails! (${result.failed} failed)`),
+    onError: (err) => toast.error(`Email failed: ${err.message}`),
+  });
+
+  const sendTestWelcomeMutation = trpc.email.sendTestWelcome.useMutation({
+    onSuccess: (result) => toast.success(`✅ Test welcome email sent to ${result.sentTo}`),
+    onError: (err) => toast.error(`Test email failed: ${err.message}`),
+  });
+
   const lockMutation = trpc.tournament.setLocked.useMutation({
     onSuccess: (result) => {
       refetchConfig();
@@ -296,6 +306,35 @@ export default function Admin() {
               ) : (
                 <><Lock size={16} className="mr-2" /> Lock Brackets</>
               )}
+            </Button>
+
+            {/* Send Lock Reminder */}
+            <Button
+              onClick={() => sendLockRemindersMutation.mutate()}
+              disabled={sendLockRemindersMutation.isPending}
+              className="bg-orange-600 hover:bg-orange-500 text-white font-bold"
+            >
+              {sendLockRemindersMutation.isPending ? (
+                <Loader2 size={16} className="mr-2 animate-spin" />
+              ) : (
+                <span className="mr-2">📧</span>
+              )}
+              {sendLockRemindersMutation.isPending ? "Sending..." : "Send Lock Reminder"}
+            </Button>
+
+            {/* Test Welcome Email */}
+            <Button
+              onClick={() => sendTestWelcomeMutation.mutate()}
+              disabled={sendTestWelcomeMutation.isPending}
+              variant="outline"
+              className="border-white/20 text-white/70 hover:text-white font-bold"
+            >
+              {sendTestWelcomeMutation.isPending ? (
+                <Loader2 size={16} className="mr-2 animate-spin" />
+              ) : (
+                <span className="mr-2">✉️</span>
+              )}
+              Test Welcome Email
             </Button>
           </div>
 

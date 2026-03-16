@@ -32,6 +32,7 @@ import { brackets, users, gameResults, tournamentConfig, teams, picks } from "..
 import { eq, sql, desc, and } from "drizzle-orm";
 import { syncEspnScores, getLiveScores, getTournamentConfig } from "./espnSync";
 import { getSchedulerStatus, triggerImmediateSync } from "./syncScheduler";
+import { sendBulkLockReminders, sendWelcomeEmail } from "./email";
 
 // ─── Seed on startup ──────────────────────────────────────────────────────────
 seedTeamsIfEmpty().catch(console.error);
@@ -722,6 +723,43 @@ IMPORTANT: Only output JSON. No other text.`,
         }
 
         return { success: true, updated, inserted, picksCleared };
+      }),
+  }),
+
+  // ─── Email ──────────────────────────────────────────────────────────────────
+  email: router({
+    // Admin: send bracket lock reminder to all users with email
+    sendLockReminders: protectedProcedure
+      .use(({ ctx, next }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        return next({ ctx });
+      })
+      .mutation(async () => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+        const allUsers = await db
+          .select({ email: users.email, name: users.name })
+          .from(users)
+          .where(sql`${users.email} IS NOT NULL AND ${users.email} != ''`);
+        const result = await sendBulkLockReminders(allUsers);
+        return result;
+      }),
+
+    // Admin: send a test welcome email to yourself
+    sendTestWelcome: protectedProcedure
+      .use(({ ctx, next }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        return next({ ctx });
+      })
+      .mutation(async ({ ctx }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const me = await db.select().from(users).where(eq(users.id, ctx.user.id)).limit(1);
+        const email = me[0]?.email;
+        const name = me[0]?.name ?? "Admin";
+        if (!email) throw new TRPCError({ code: "BAD_REQUEST", message: "No email on your account" });
+        const ok = await sendWelcomeEmail(email, name);
+        return { success: ok, sentTo: email };
       }),
   }),
 });
