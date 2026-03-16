@@ -235,3 +235,10 @@
 - [x] Connector lines highlight on hover (brighter stroke)
 - [x] Pass connectorSeedPairs from matchup data into BracketConnectors in bracket grid render
 - [x] 0 TypeScript errors, Vite HMR clean
+
+## Connector Line Alignment Fix (Critical)
+- [ ] Remove all hardcoded pixel math for connector positions
+- [ ] Use DOM ref measurement (getBoundingClientRect) to get actual matchup card centers
+- [ ] Draw SVG connector lines from measured positions — pixel perfect
+- [ ] Preserve H2H tooltip on connectors
+- [ ] 0 TypeScript errors, visually verified

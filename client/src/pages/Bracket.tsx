@@ -88,161 +88,176 @@ function TeamSlot({
   );
 }
 
-// SVG connector lines between a round column and the next
-// Each matchup pair feeds into one slot in the next round.
-// MATCHUP_H = height of one Matchup card (2 slots + vs divider + padding)
-const MATCHUP_H = 96; // px — must match the card height in Matchup below
-const CONNECTOR_W = 20; // px wide SVG strip between columns
+// DOM-measured bracket connector overlay
+// Renders an SVG overlay over the entire bracket grid, drawing lines from
+// measured DOM positions of each matchup card — pixel-perfect regardless of card height.
 
-// Tooltip state for connector hover
-function ConnectorTooltip({
-  seed1, seed2, x, y, visible,
-}: { seed1: number; seed2: number; x: number; y: number; visible: boolean }) {
-  if (!visible) return null;
-  const h2h = getSeedH2H(seed1, seed2);
-  if (!h2h) return null;
-  const favPct = Math.round((h2h.favWins / h2h.total) * 100);
-  const dogPct = 100 - favPct;
-  return (
-    <div
-      className="absolute z-50 pointer-events-none"
-      style={{ left: x + 8, top: y - 8, transform: "translateY(-100%)" }}
-    >
-      <div className="bg-[oklch(0.12_0.015_260)] border border-white/20 rounded-lg p-3 shadow-2xl min-w-[200px] max-w-[240px]">
-        <div className="text-xs font-bold text-white mb-1">
-          Seed {h2h.favSeed} vs Seed {h2h.dogSeed}
-        </div>
-        <div className="flex items-center gap-2 mb-2">
-          <div className="flex-1">
-            <div className="text-[10px] text-white/50 mb-0.5">#{h2h.favSeed} seeds</div>
-            <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-[oklch(0.65_0.22_35)]"
-                style={{ width: `${favPct}%` }}
-              />
-            </div>
-            <div className="text-[10px] text-[oklch(0.65_0.22_35)] font-bold mt-0.5">{h2h.favWins}–{h2h.dogWins} ({favPct}%)</div>
-          </div>
-        </div>
-        <div className="text-[10px] text-white/40 italic leading-tight">{h2h.funFact}</div>
-      </div>
-    </div>
-  );
+const CONNECTOR_W = 24; // px gap between round columns for connector lines
+
+interface ConnectorLine {
+  topY: number;    // center Y of top matchup in pair
+  botY: number;    // center Y of bottom matchup in pair
+  midY: number;    // midpoint Y (where line leads into next round)
+  x1: number;     // right edge of left round column
+  x2: number;     // left edge of right round column
+  seedPair: [number, number] | null;
 }
 
-function BracketConnectors({
-  count, gap, paddingTop, seedPairs,
+function BracketOverlaySVG({
+  containerRef,
+  matchupRefs,
+  rounds,
+  seedPairsPerRound,
 }: {
-  count: number;
-  gap: number;
-  paddingTop: number;
-  seedPairs?: Array<[number, number] | null>; // seed pair for each matchup pair (top then bottom)
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  matchupRefs: React.MutableRefObject<Record<string, HTMLDivElement | null>>;
+  rounds: Array<{ round: Round; matchups: Array<{ id: string; team1?: TeamData; team2?: TeamData }> }>;
+  seedPairsPerRound: Array<Array<[number, number] | null>>;
 }) {
-  const [hoveredPair, setHoveredPair] = useState<number | null>(null);
+  const [lines, setLines] = useState<ConnectorLine[]>([]);
+  const [svgSize, setSvgSize] = useState({ w: 0, h: 0 });
+  const [hoveredLine, setHoveredLine] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
-  const svgRef = React.useRef<SVGSVGElement>(null);
 
-  // 'count' = number of matchups in the LEFT round (e.g. 8 for R64)
-  const pairs = Math.ceil(count / 2);
-  const totalH = paddingTop + pairs * (MATCHUP_H * 2 + gap) - gap;
-  const lines: React.ReactNode[] = [];
+  useEffect(() => {
+    const measure = () => {
+      const container = containerRef.current;
+      if (!container) return;
+      const containerRect = container.getBoundingClientRect();
+      setSvgSize({ w: containerRect.width, h: containerRect.height });
 
-  for (let i = 0; i < pairs; i++) {
-    const topMatchupCenter = paddingTop + i * (MATCHUP_H * 2 + gap) + MATCHUP_H / 2;
-    const botMatchupCenter = topMatchupCenter + MATCHUP_H + gap;
-    const midY = (topMatchupCenter + botMatchupCenter) / 2;
+      const newLines: ConnectorLine[] = [];
 
-    // Get seed pair for this connector (top matchup's seeds, if available)
-    const topSeedPair = seedPairs?.[i * 2] ?? null;
-    const hasH2H = topSeedPair ? !!getSeedH2H(topSeedPair[0], topSeedPair[1]) : false;
-    const isHovered = hoveredPair === i;
+      for (let rIdx = 0; rIdx < rounds.length - 1; rIdx++) {
+        const leftRound = rounds[rIdx];
+        const rightRound = rounds[rIdx + 1];
+        const leftMatchups = leftRound.matchups;
+        const rightMatchups = rightRound.matchups;
+        const seedPairs = seedPairsPerRound[rIdx] ?? [];
 
-    lines.push(
-      <g
-        key={i}
-        stroke={isHovered ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.12)"}
-        strokeWidth={isHovered ? "1.5" : "1"}
-        fill="none"
-        style={{ cursor: hasH2H ? "pointer" : "default" }}
-        onMouseEnter={(e) => {
-          if (!hasH2H) return;
-          const rect = svgRef.current?.getBoundingClientRect();
-          if (rect) setTooltipPos({ x: rect.left + CONNECTOR_W * 2, y: rect.top + midY });
-          setHoveredPair(i);
-        }}
-        onMouseLeave={() => setHoveredPair(null)}
-      >
-        <line x1="0" y1={topMatchupCenter} x2={CONNECTOR_W} y2={topMatchupCenter} />
-        <line x1="0" y1={botMatchupCenter} x2={CONNECTOR_W} y2={botMatchupCenter} />
-        <line x1={CONNECTOR_W} y1={topMatchupCenter} x2={CONNECTOR_W} y2={botMatchupCenter} />
-        <line x1={CONNECTOR_W} y1={midY} x2={CONNECTOR_W * 2} y2={midY} />
-        {/* Invisible wider hit area for easier hover */}
-        {hasH2H && (
-          <rect
-            x={0} y={topMatchupCenter - 4}
-            width={CONNECTOR_W * 2} height={botMatchupCenter - topMatchupCenter + 8}
-            fill="transparent" stroke="none"
-          />
-        )}
-        {/* Small info dot on the vertical connector */}
-        {hasH2H && (
-          <circle
-            cx={CONNECTOR_W} cy={midY}
-            r="3"
-            fill={isHovered ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.15)"}
-            stroke="none"
-          />
-        )}
-      </g>
-    );
-  }
+        // Each pair of left matchups connects to one right matchup
+        for (let i = 0; i < rightMatchups.length; i++) {
+          const topLeft = leftMatchups[i * 2];
+          const botLeft = leftMatchups[i * 2 + 1];
+          const rightM = rightMatchups[i];
+          if (!topLeft || !botLeft || !rightM) continue;
+
+          const topEl = matchupRefs.current[topLeft.id];
+          const botEl = matchupRefs.current[botLeft.id];
+          const rightEl = matchupRefs.current[rightM.id];
+          if (!topEl || !botEl || !rightEl) continue;
+
+          const topRect = topEl.getBoundingClientRect();
+          const botRect = botEl.getBoundingClientRect();
+          const rightRect = rightEl.getBoundingClientRect();
+
+          const topY = topRect.top + topRect.height / 2 - containerRect.top;
+          const botY = botRect.top + botRect.height / 2 - containerRect.top;
+          const midY = (topY + botY) / 2;
+          const x1 = topRect.right - containerRect.left;
+          const x2 = rightRect.left - containerRect.left;
+
+          newLines.push({
+            topY, botY, midY, x1, x2,
+            seedPair: seedPairs[i * 2] ?? null,
+          });
+        }
+      }
+      setLines(newLines);
+    };
+
+    // Measure after paint
+    const raf = requestAnimationFrame(() => { measure(); });
+    const observer = new ResizeObserver(measure);
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => { cancelAnimationFrame(raf); observer.disconnect(); };
+  }, [rounds, containerRef, matchupRefs, seedPairsPerRound]);
+
+  if (svgSize.w === 0) return null;
 
   return (
-    <div className="relative flex-shrink-0 self-start" style={{ marginTop: 28 }}>
-      <svg ref={svgRef} width={CONNECTOR_W * 2} height={totalH}>
-        {lines}
+    <>
+      <svg
+        className="absolute inset-0 pointer-events-none"
+        width={svgSize.w}
+        height={svgSize.h}
+        style={{ zIndex: 1 }}
+      >
+        {lines.map((l, i) => {
+          const isHovered = hoveredLine === i;
+          const midX = l.x1 + (l.x2 - l.x1) / 2;
+          return (
+            <g
+              key={i}
+              stroke={isHovered ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.15)"}
+              strokeWidth={isHovered ? 1.5 : 1}
+              fill="none"
+            >
+              {/* horizontal from top matchup right edge */}
+              <line x1={l.x1} y1={l.topY} x2={midX} y2={l.topY} />
+              {/* horizontal from bottom matchup right edge */}
+              <line x1={l.x1} y1={l.botY} x2={midX} y2={l.botY} />
+              {/* vertical joining top and bottom */}
+              <line x1={midX} y1={l.topY} x2={midX} y2={l.botY} />
+              {/* horizontal to right round */}
+              <line x1={midX} y1={l.midY} x2={l.x2} y2={l.midY} />
+              {/* Info dot at midpoint */}
+              {l.seedPair && (
+                <circle
+                  cx={midX} cy={l.midY} r={3.5}
+                  fill={isHovered ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.18)"}
+                  stroke="none"
+                  style={{ pointerEvents: "all", cursor: "pointer" }}
+                  onMouseEnter={(e) => {
+                    setTooltipPos({ x: e.clientX, y: e.clientY });
+                    setHoveredLine(i);
+                  }}
+                  onMouseLeave={() => setHoveredLine(null)}
+                />
+              )}
+            </g>
+          );
+        })}
       </svg>
-      {/* Tooltip rendered in a portal-like fixed div */}
-      {hoveredPair !== null && seedPairs?.[hoveredPair * 2] && (
-        <div
-          className="fixed z-50 pointer-events-none"
-          style={{ left: tooltipPos.x + 8, top: tooltipPos.y - 8, transform: "translateY(-100%)" }}
-        >
-          {(() => {
-            const sp = seedPairs![hoveredPair * 2]!;
-            const h2h = getSeedH2H(sp[0], sp[1]);
-            if (!h2h) return null;
-            const favPct = Math.round((h2h.favWins / h2h.total) * 100);
-            return (
-              <div className="bg-[oklch(0.12_0.015_260)] border border-white/20 rounded-lg p-3 shadow-2xl min-w-[200px] max-w-[250px]">
-                <div className="text-xs font-bold text-white mb-2">
-                  #{h2h.favSeed} vs #{h2h.dogSeed} Seeds — All-Time Record
+      {/* H2H Tooltip */}
+      {hoveredLine !== null && lines[hoveredLine]?.seedPair && (() => {
+        const sp = lines[hoveredLine]!.seedPair!;
+        const h2h = getSeedH2H(sp[0], sp[1]);
+        if (!h2h) return null;
+        const favPct = Math.round((h2h.favWins / h2h.total) * 100);
+        return (
+          <div
+            className="fixed z-50 pointer-events-none"
+            style={{ left: tooltipPos.x + 12, top: tooltipPos.y - 8, transform: "translateY(-100%)" }}
+          >
+            <div className="bg-[oklch(0.12_0.015_260)] border border-white/20 rounded-lg p-3 shadow-2xl min-w-[200px] max-w-[250px]">
+              <div className="text-xs font-bold text-white mb-2">
+                #{h2h.favSeed} vs #{h2h.dogSeed} Seeds — All-Time Record
+              </div>
+              <div className="mb-2">
+                <div className="flex justify-between text-[10px] text-white/50 mb-1">
+                  <span>#{h2h.favSeed} seeds</span>
+                  <span>{h2h.favWins}–{h2h.dogWins}</span>
                 </div>
-                <div className="mb-2">
-                  <div className="flex justify-between text-[10px] text-white/50 mb-1">
-                    <span>#{h2h.favSeed} seeds</span>
-                    <span>{h2h.favWins}–{h2h.dogWins}</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-[oklch(0.65_0.22_35)] transition-all"
-                      style={{ width: `${favPct}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-[10px] mt-1">
-                    <span className="text-[oklch(0.65_0.22_35)] font-bold">{favPct}% win rate</span>
-                    <span className="text-white/30">{100 - favPct}% upsets</span>
-                  </div>
+                <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-[oklch(0.65_0.22_35)] transition-all"
+                    style={{ width: `${favPct}%` }}
+                  />
                 </div>
-                <div className="text-[10px] text-white/40 italic leading-snug border-t border-white/10 pt-2">
-                  {h2h.funFact}
+                <div className="flex justify-between text-[10px] mt-1">
+                  <span className="text-[oklch(0.65_0.22_35)] font-bold">{favPct}% win rate</span>
+                  <span className="text-white/30">{100 - favPct}% upsets</span>
                 </div>
               </div>
-            );
-          })()}
-        </div>
-      )}
-    </div>
+              <div className="text-[10px] text-white/40 italic leading-snug border-t border-white/10 pt-2">
+                {h2h.funFact}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+    </>
   );
 }
 
@@ -342,6 +357,9 @@ export default function Bracket() {
   const [showShare, setShowShare] = useState(false);
   const [showVoicePanel, setShowVoicePanel] = useState(false);
   const [showAutoFill, setShowAutoFill] = useState(false);
+  // Refs for DOM-measured connector lines
+  const bracketContainerRef = React.useRef<HTMLDivElement>(null);
+  const matchupRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
 
   const { data: teamsData } = trpc.teams.getAll.useQuery();
   const { data: bracketData, refetch: refetchBracket } = trpc.bracket.getMine.useQuery(undefined, {
@@ -831,140 +849,139 @@ export default function Bracket() {
               </div>
             </div>
 
-            {/* Bracket Grid */}
-            <div className="flex items-start min-w-max">
-              {roundMatchups.map(({ round, matchups }, roundIdx) => {
-                const prevRoundLabel = round === "round32" ? "Round of 64" : round === "sweet16" ? "Round of 32" : round === "elite8" ? "Sweet 16" : undefined;
-                const allTBD = matchups.every((m) => !m.team1 && !m.team2);
-                const hintText = prevRoundLabel ? `Pick ${prevRoundLabel} winners to unlock` : undefined;
-                const isR64 = round === "round64";
+            {/* Bracket Grid — relative container for SVG overlay */}
+            {(() => {
+              // Build seedPairs per round for H2H tooltips
+              const seedPairsPerRound: Array<Array<[number, number] | null>> = roundMatchups.map(({ matchups }) =>
+                matchups.map((m) => {
+                  const s1 = m.team1?.seed;
+                  const s2 = m.team2?.seed;
+                  return s1 !== undefined && s2 !== undefined ? [s1, s2] : null;
+                })
+              );
 
-                // Gap and paddingTop values (in px numbers for connector math)
-                const gapPx = isR64 ? 12 : round === "round32" ? 108 : round === "sweet16" ? 228 : 468;
-                const padTopPx = isR64 ? 0 : round === "round32" ? 54 : round === "sweet16" ? 114 : 234;
+              // Region winner matchup id for connector
+              const elite8Matchups = getMatchupsForRound(activeRegion, "elite8");
+              const regionWinnerId = "RegionWinner-" + activeRegion;
 
-                // Show connectors between this round and the next
-                const prevMatchups = roundIdx > 0 ? roundMatchups[roundIdx - 1].matchups : [];
-                const prevRound = roundIdx > 0 ? roundMatchups[roundIdx - 1].round : null;
-                const prevGapPx = prevRound === "round64" ? 12 : prevRound === "round32" ? 108 : prevRound === "sweet16" ? 228 : 468;
-                const prevPadTopPx = prevRound === "round64" ? 0 : prevRound === "round32" ? 54 : prevRound === "sweet16" ? 114 : 234;
+              return (
+                <div ref={bracketContainerRef} className="relative flex items-start min-w-max">
+                  {/* DOM-measured SVG overlay for connector lines */}
+                  <BracketOverlaySVG
+                    containerRef={bracketContainerRef}
+                    matchupRefs={matchupRefs}
+                    rounds={roundMatchups}
+                    seedPairsPerRound={seedPairsPerRound}
+                  />
 
-                // Build seedPairs for the connector: one entry per matchup in prevMatchups
-                // Each entry is [team1.seed, team2.seed] or null if seeds unknown
-                const connectorSeedPairs: Array<[number, number] | null> = prevMatchups.map((pm) => {
-                  const s1 = pm.team1?.seed;
-                  const s2 = pm.team2?.seed;
-                  if (s1 !== undefined && s2 !== undefined) return [s1, s2];
-                  return null;
-                });
+                  {roundMatchups.map(({ round, matchups }, roundIdx) => {
+                    const prevRoundLabel = round === "round32" ? "Round of 64" : round === "sweet16" ? "Round of 32" : round === "elite8" ? "Sweet 16" : undefined;
+                    const allTBD = matchups.every((m) => !m.team1 && !m.team2);
+                    const hintText = prevRoundLabel ? `Pick ${prevRoundLabel} winners to unlock` : undefined;
+                    const isR64 = round === "round64";
 
-                return (
-                  <React.Fragment key={round}>
-                    {/* SVG connector lines from previous round into this one */}
-                    {roundIdx > 0 && (
-                      <BracketConnectors
-                        count={prevMatchups.length}
-                        gap={prevGapPx}
-                        paddingTop={prevPadTopPx}
-                        seedPairs={connectorSeedPairs}
-                      />
-                    )}
+                    // Spacing: gap between matchups and paddingTop to center them vertically
+                    const gapPx = isR64 ? 12 : round === "round32" ? 108 : round === "sweet16" ? 228 : 468;
+                    const padTopPx = isR64 ? 0 : round === "round32" ? 54 : round === "sweet16" ? 114 : 234;
 
-                    <div key={round} className="flex flex-col">
-                      <div className="text-center mb-3 px-2">
-                        <div className="text-xs font-condensed uppercase tracking-wider text-white/40">
-                          {ROUND_LABELS[round]}
-                        </div>
-                        {allTBD && hintText && (
-                          <div className="text-[9px] text-[oklch(0.65_0.22_35/0.7)] mt-0.5 font-medium">
-                            ← {prevRoundLabel} first
-                          </div>
-                        )}
-                      </div>
-                      <div
-                        className="flex flex-col"
-                        style={{
-                          gap: `${gapPx}px`,
-                          paddingTop: `${padTopPx}px`,
-                        }}
-                      >
-                        {matchups.map((m) => (
-                          <Matchup
-                            key={m.id}
-                            team1={m.team1}
-                            team2={m.team2}
-                            pickedTeamId={picks[m.id]}
-                            showCard={isR64}
-                            onPick={(teamId, t1Seed, t2Seed) => {
-                              const t1 = m.team1;
-                              const t2 = m.team2;
-                              // Allow picking even when opponent is TBD
-                              // At least one team must be present (the one being picked)
-                              if (!t1 && !t2) return;
-                              const pickedTeam = t1?.id === teamId ? t1 : t2;
-                              if (!pickedTeam) return;
-                              handlePick(
-                                m.id,
-                                teamId,
-                                round,
-                                t1?.id ?? teamId,
-                                t2?.id ?? null,
-                                t1Seed,
-                                t2Seed
-                              );
-                            }}
-                            matchupId={m.id}
-                            hintText={hintText}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </React.Fragment>
-                );
-              })}
-
-              {/* Connector from Elite Eight into Region Winner */}
-              <BracketConnectors count={1} gap={0} paddingTop={234} />
-
-              {/* Region Winner */}
-              <div className="flex flex-col gap-2">
-                <div className="text-center text-xs font-condensed uppercase tracking-wider text-[oklch(0.78_0.18_80)] mb-2 px-2">
-                  Region Winner
-                </div>
-                <div style={{ paddingTop: "292px" }}>
-                  {(() => {
-                    const elite8 = getMatchupsForRound(activeRegion, "elite8");
-                    const m = elite8[0];
-                    if (!m) return null;
-                    const winnerId = picks[m.id];
-                    const winner = winnerId ? teams.find((t) => t.id === winnerId) : undefined;
                     return (
-                      <div className="min-w-[130px] max-w-[150px]">
-                        {winner ? (
-                          <div className="flex items-center gap-2 px-2 py-2 rounded border border-[oklch(0.78_0.18_80/0.5)] bg-[oklch(0.78_0.18_80/0.1)]">
-                            <div
-                              className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0"
-                              style={{ backgroundColor: winner.color ?? "#333" }}
-                            >
-                              {winner.seed}
+                      <div key={round} className="flex flex-col" style={{ zIndex: 2, position: "relative", marginRight: CONNECTOR_W }}>
+                        <div className="text-center mb-3 px-2">
+                          <div className="text-xs font-condensed uppercase tracking-wider text-white/40">
+                            {ROUND_LABELS[round]}
+                          </div>
+                          {allTBD && hintText && (
+                            <div className="text-[9px] text-[oklch(0.65_0.22_35/0.7)] mt-0.5 font-medium">
+                              ← {prevRoundLabel} first
                             </div>
-                            <span className="text-xs font-bold text-[oklch(0.78_0.18_80)] truncate">
-                              {winner.shortName}
-                            </span>
-                            <Trophy size={12} className="text-[oklch(0.78_0.18_80)] flex-shrink-0" />
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 px-2 py-2 rounded border border-[oklch(0.78_0.18_80/0.2)] bg-[oklch(0.78_0.18_80/0.05)] min-h-[36px]">
-                            <Trophy size={14} className="text-[oklch(0.78_0.18_80/0.4)]" />
-                            <span className="text-[10px] text-[oklch(0.78_0.18_80/0.4)]">Pick winner</span>
-                          </div>
-                        )}
+                          )}
+                        </div>
+                        <div
+                          className="flex flex-col"
+                          style={{
+                            gap: `${gapPx}px`,
+                            paddingTop: `${padTopPx}px`,
+                          }}
+                        >
+                          {matchups.map((m) => (
+                            <div
+                              key={m.id}
+                              ref={(el) => { matchupRefs.current[m.id] = el; }}
+                            >
+                              <Matchup
+                                team1={m.team1}
+                                team2={m.team2}
+                                pickedTeamId={picks[m.id]}
+                                showCard={isR64}
+                                onPick={(teamId, t1Seed, t2Seed) => {
+                                  const t1 = m.team1;
+                                  const t2 = m.team2;
+                                  if (!t1 && !t2) return;
+                                  const pickedTeam = t1?.id === teamId ? t1 : t2;
+                                  if (!pickedTeam) return;
+                                  handlePick(
+                                    m.id,
+                                    teamId,
+                                    round,
+                                    t1?.id ?? teamId,
+                                    t2?.id ?? null,
+                                    t1Seed,
+                                    t2Seed
+                                  );
+                                }}
+                                matchupId={m.id}
+                                hintText={hintText}
+                              />
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     );
-                  })()}
+                  })}
+
+                  {/* Region Winner column */}
+                  <div className="flex flex-col gap-2" style={{ zIndex: 2, position: "relative" }}>
+                    <div className="text-center text-xs font-condensed uppercase tracking-wider text-[oklch(0.78_0.18_80)] mb-2 px-2">
+                      Region Winner
+                    </div>
+                    <div
+                      ref={(el) => { matchupRefs.current[regionWinnerId] = el; }}
+                      style={{ paddingTop: "292px" }}
+                    >
+                      {(() => {
+                        const m = elite8Matchups[0];
+                        if (!m) return null;
+                        const winnerId = picks[m.id];
+                        const winner = winnerId ? teams.find((t) => t.id === winnerId) : undefined;
+                        return (
+                          <div className="min-w-[130px] max-w-[150px]">
+                            {winner ? (
+                              <div className="flex items-center gap-2 px-2 py-2 rounded border border-[oklch(0.78_0.18_80/0.5)] bg-[oklch(0.78_0.18_80/0.1)]">
+                                <div
+                                  className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0"
+                                  style={{ backgroundColor: winner.color ?? "#333" }}
+                                >
+                                  {winner.seed}
+                                </div>
+                                <span className="text-xs font-bold text-[oklch(0.78_0.18_80)] truncate">
+                                  {winner.shortName}
+                                </span>
+                                <Trophy size={12} className="text-[oklch(0.78_0.18_80)] flex-shrink-0" />
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2 px-2 py-2 rounded border border-[oklch(0.78_0.18_80/0.2)] bg-[oklch(0.78_0.18_80/0.05)] min-h-[36px]">
+                                <Trophy size={14} className="text-[oklch(0.78_0.18_80/0.4)]" />
+                                <span className="text-[10px] text-[oklch(0.78_0.18_80/0.4)]">Pick winner</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              );
+            })()}
           </div>
         )}
 
