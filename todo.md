@@ -247,3 +247,13 @@
 - [ ] Draw SVG connector lines from measured positions — pixel perfect
 - [ ] Preserve H2H tooltip on connectors
 - [ ] 0 TypeScript errors, visually verified
+
+## Google OAuth Migration (Replace Manus Auth)
+- [x] Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to environment secrets
+- [x] Add googleClientId and googleClientSecret to server ENV config
+- [x] Rewrite server/_core/oauth.ts: new /api/oauth/google initiation endpoint + Google callback handler
+- [x] Store user email from Google profile in DB on every sign-in
+- [x] Update client/src/const.ts: getLoginUrl() now points to /api/oauth/google
+- [x] All login buttons across app automatically use new Google sign-in (no per-page changes needed)
+- [x] Write vitest tests for Google OAuth config (3 new tests, 31 total passing)
+- [ ] Publish to live domain
