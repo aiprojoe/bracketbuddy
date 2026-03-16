@@ -201,3 +201,11 @@
 ## UBS Footer & Branding
 - [x] Add Unrivaled Business Solutions footer to all pages (link to www.unrivaledbusinesssolutions.com)
 - [x] Footer style: minimal, dark, enterprise — no Manus references anywhere
+
+## First Four / Play-In Fix
+- [x] Add First Four tab to bracket UI showing all 4 play-in games (March 18–19 dates shown)
+- [x] First Four winners feed into correct Round of 64 slots via getR64Team() helper
+- [x] FIRST_FOUR_MATCHUPS definition added to shared/bracketData.ts with region+winnerSeed mapping
+- [x] getR64Team() checks isFirstFour flag: if 2 play-in teams exist, uses picked winner; else falls back to normal team
+- [x] Tabs: First Four | East | West | South | Midwest | Final Four (all working)
+- [x] 0 TypeScript errors, 28/28 tests passing

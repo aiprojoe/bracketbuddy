@@ -60,6 +60,26 @@ export interface Matchup {
   winnerId?: number; // actual result
 }
 
+/**
+ * First Four matchup structure.
+ * 4 games: 2 between at-large 11 seeds, 2 between automatic 16 seeds.
+ * Winners advance to the Round of 64 in the specified region/slot.
+ * region + slot must match the SEED_PAIRS_R64 index for seed 11 or 16.
+ */
+export interface FirstFourMatchup {
+  id: string;          // e.g. "FirstFour-0"
+  region: Region;      // which region the winner enters
+  winnerSeed: 11 | 16; // the seed the winner takes in R64
+  label: string;       // display label
+}
+
+export const FIRST_FOUR_MATCHUPS: FirstFourMatchup[] = [
+  { id: "FirstFour-0", region: "East",    winnerSeed: 16, label: "East 16 Play-In" },
+  { id: "FirstFour-1", region: "West",    winnerSeed: 16, label: "West 16 Play-In" },
+  { id: "FirstFour-2", region: "South",   winnerSeed: 11, label: "South 11 Play-In" },
+  { id: "FirstFour-3", region: "Midwest", winnerSeed: 11, label: "Midwest 11 Play-In" },
+];
+
 // Standard seeding order for display
 export const SEED_PAIRS_R64 = [
   [1, 16],

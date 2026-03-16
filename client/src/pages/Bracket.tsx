@@ -8,7 +8,7 @@ import { useConfetti } from "@/hooks/useConfetti";
 import { toast } from "sonner";
 import { Mic, Zap, Share2, RotateCcw, ChevronRight, Trophy, Sparkles, Swords, Printer, Wand2, Info } from "lucide-react";
 import ShareBracketModal from "@/components/ShareBracketModal";
-import { type TeamData, SEED_PAIRS_R64, type Region, type Round, getUpsetProbability } from "../../../shared/bracketData";
+import { type TeamData, SEED_PAIRS_R64, FIRST_FOUR_MATCHUPS, type Region, type Round, getUpsetProbability } from "../../../shared/bracketData";
 import VoiceAssistant from "@/components/VoiceAssistant";
 import AIAnalysis from "@/components/AIAnalysis";
 import LiveScoresBanner from "@/components/LiveScoresBanner";
@@ -167,7 +167,7 @@ export default function Bracket() {
   const [picks, setPicks] = useState<PicksMap>({});
   const [bracketId, setBracketId] = useState<number | null>(null);
   const [showAI, setShowAI] = useState(false);
-  const [activeRegion, setActiveRegion] = useState<Region>("East");
+  const [activeTab, setActiveTab] = useState<Region | "FirstFour" | "FirstFourTab">("FirstFourTab");
   const [totalPicks, setTotalPicks] = useState(0);
   const [showShare, setShowShare] = useState(false);
   const [showVoicePanel, setShowVoicePanel] = useState(false);
@@ -213,13 +213,34 @@ export default function Bracket() {
     teams.find((t) => t.region === region && t.seed === seed);
 
   // Build matchups for a region and round
+  // Helper: get the team that should occupy a seed slot in the Round of 64.
+  // For seeds 11 and 16, if there are First Four play-in teams, use the picked winner.
+  const getR64Team = useCallback(
+    (region: Region, seed: number): TeamData | undefined => {
+      // Check if this is a First Four seed (11 or 16) with play-in teams
+      const ff = FIRST_FOUR_MATCHUPS.find((f) => f.region === region && f.winnerSeed === seed);
+      if (ff) {
+        const playInTeams = teams.filter((t) => t.region === region && t.seed === seed && t.isFirstFour);
+        if (playInTeams.length >= 2) {
+          // Two play-in teams exist — use the picked winner, or undefined if no pick yet
+          const winnerId = picks[ff.id];
+          return winnerId ? teams.find((t) => t.id === winnerId) : undefined;
+        }
+      }
+      // Normal case: find the single team with this seed
+      return teams.find((t) => t.region === region && t.seed === seed && !t.isFirstFour) ??
+             teams.find((t) => t.region === region && t.seed === seed);
+    },
+    [picks, teams]
+  );
+
   const getMatchupsForRound = useCallback(
     (region: Region, round: Round): Array<{ id: string; team1?: TeamData; team2?: TeamData }> => {
       if (round === "round64") {
         return SEED_PAIRS_R64.map(([s1, s2], i) => ({
           id: getMatchupId(region, round, i),
-          team1: getTeamBySeed(region, s1),
-          team2: getTeamBySeed(region, s2),
+          team1: getR64Team(region, s1),
+          team2: getR64Team(region, s2),
         }));
       }
 
@@ -354,6 +375,11 @@ export default function Bracket() {
 
   const progressPct = Math.round((totalPicks / 63) * 100);
 
+  // Derive the active region for bracket rendering (only valid for region tabs)
+  const activeRegion: Region = (activeTab === "FirstFourTab" || activeTab === "FirstFour")
+    ? "East"
+    : (activeTab as Region);
+
   const regionTeams = getTeamsByRegion(activeRegion);
 
   const rounds: Round[] = ["round64", "round32", "sweet16", "elite8"];
@@ -361,6 +387,21 @@ export default function Bracket() {
     round: r,
     matchups: getMatchupsForRound(activeRegion, r),
   }));
+
+  // Build First Four matchups from teams with isFirstFour=true
+  const getFirstFourMatchups = useCallback(() => {
+    return FIRST_FOUR_MATCHUPS.map((ff) => {
+      // Find the two teams that are play-in teams for this region+seed
+      const playInTeams = teams.filter(
+        (t) => t.region === ff.region && t.seed === ff.winnerSeed && t.isFirstFour
+      );
+      return {
+        ...ff,
+        team1: playInTeams[0],
+        team2: playInTeams[1],
+      };
+    });
+  }, [teams]);
 
   const champion = (() => {
     const champ = getChampionshipMatchup();
@@ -476,7 +517,7 @@ export default function Bracket() {
                   const t1Seed = t1?.seed ?? 99;
                   const t2Seed = t2?.seed ?? null;
                   handlePick(m.id, teamId, round, t1?.id ?? teamId, t2?.id ?? null, t1Seed, t2Seed);
-                  setActiveRegion(region);
+                  setActiveTab(region);
                   picked = true;
                   break;
                 }
@@ -509,14 +550,27 @@ export default function Bracket() {
       <div className="border-b border-white/10 bg-[oklch(0.12_0.01_260)] sticky top-16 z-40">
         <div className="max-w-full mx-auto px-4">
           <div className="flex overflow-x-auto gap-1 py-2">
+            {/* First Four tab */}
+            <button
+              onClick={() => setActiveTab("FirstFourTab")}
+              className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                activeTab === "FirstFourTab"
+                  ? "bg-[oklch(0.55_0.2_250)] text-white"
+                  : "text-[oklch(0.55_0.2_250/0.8)] hover:text-white hover:bg-white/5"
+              }`}
+            >
+              🎯 First Four
+            </button>
+
+            {/* Region tabs */}
             {REGIONS.map((region) => {
-              const regionPicks = Object.keys(picks).filter((k) => k.startsWith(region)).length;
+              const regionPicks = Object.keys(picks).filter((k) => k.startsWith(region) && !k.startsWith("FirstFour")).length;
               return (
                 <button
                   key={region}
-                  onClick={() => setActiveRegion(region)}
+                  onClick={() => setActiveTab(region)}
                   className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                    activeRegion === region
+                    activeTab === region
                       ? "bg-[oklch(0.65_0.22_35)] text-white"
                       : "text-white/60 hover:text-white hover:bg-white/5"
                   }`}
@@ -526,9 +580,15 @@ export default function Bracket() {
                 </button>
               );
             })}
+
+            {/* Final Four tab */}
             <button
-              onClick={() => setActiveRegion("East")}
-              className="flex-shrink-0 px-4 py-2 rounded-lg text-sm font-semibold text-[oklch(0.78_0.18_80)] hover:bg-[oklch(0.78_0.18_80/0.1)] transition-all"
+              onClick={() => setActiveTab("FirstFour")}
+              className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                activeTab === "FirstFour"
+                  ? "bg-[oklch(0.78_0.18_80/0.2)] text-[oklch(0.78_0.18_80)]"
+                  : "text-[oklch(0.78_0.18_80/0.7)] hover:bg-[oklch(0.78_0.18_80/0.1)]"
+              }`}
             >
               <Trophy size={14} className="inline mr-1" />
               Final Four
@@ -551,10 +611,51 @@ export default function Bracket() {
           <span>Scroll to see all rounds</span>
           <span>→</span>
         </div>
-        {activeRegion !== ("FinalFour" as any) ? (
+        {/* First Four Tab */}
+        {activeTab === "FirstFourTab" && (
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <h2 className="font-display text-3xl text-white">{activeRegion.toUpperCase()} REGION</h2>
+              <h2 className="font-display text-3xl text-white">FIRST FOUR</h2>
+              <div className="text-sm text-white/40">Play-in games · March 18–19 · Winners advance to Round of 64</div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl">
+              {getFirstFourMatchups().map((ff) => (
+                <div key={ff.id} className="bg-white/3 border border-white/10 rounded-xl p-4">
+                  <div className="text-xs font-condensed uppercase tracking-wider text-[oklch(0.55_0.2_250)] mb-1">{ff.label}</div>
+                  <div className="text-[10px] text-white/30 mb-3">
+                    Winner becomes #{ff.winnerSeed} seed in {ff.region} Region
+                  </div>
+                  <Matchup
+                    team1={ff.team1}
+                    team2={ff.team2}
+                    pickedTeamId={picks[ff.id]}
+                    onPick={(teamId, t1Seed, t2Seed) => {
+                      if (!ff.team1 && !ff.team2) return;
+                      handlePick(
+                        ff.id, teamId, "firstfour",
+                        ff.team1?.id ?? teamId, ff.team2?.id ?? null,
+                        t1Seed, t2Seed
+                      );
+                    }}
+                    matchupId={ff.id}
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 p-4 bg-[oklch(0.55_0.2_250/0.08)] border border-[oklch(0.55_0.2_250/0.2)] rounded-xl max-w-2xl">
+              <p className="text-xs text-white/50">
+                <span className="text-[oklch(0.55_0.2_250)] font-bold">How it works:</span> The 4 First Four winners take their seed slot in the Round of 64.
+                If you don't pick a First Four winner, that slot in the Round of 64 will show as TBD — you can still pick the other team in that matchup.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Region Bracket */}
+        {(activeTab === "East" || activeTab === "West" || activeTab === "South" || activeTab === "Midwest") && (
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <h2 className="font-display text-3xl text-white">{activeTab.toUpperCase()} REGION</h2>
               <div className="text-sm text-white/40">
                 {regionTeams.length} teams · Click to pick winners
               </div>
@@ -658,9 +759,10 @@ export default function Bracket() {
               </div>
             </div>
           </div>
-        ) : null}
+        )}
 
-        {/* Final Four & Championship */}
+        {/* Final Four & Championship — shown when Final Four tab is active */}
+        {activeTab === "FirstFour" && (
         <div className="mt-10">
           <div className="flex items-center gap-3 mb-6">
             <Trophy size={20} className="text-[oklch(0.78_0.18_80)]" />
@@ -756,6 +858,7 @@ export default function Bracket() {
             </div>
           </div>
         </div>
+        )}
       </div>
 
       {/* Share + Challenge CTAs */}
