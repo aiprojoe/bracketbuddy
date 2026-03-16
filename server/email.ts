@@ -194,3 +194,64 @@ export async function sendBulkLockReminders(
   }
   return { sent, failed };
 }
+
+// ─── Magic Link Email ─────────────────────────────────────────────────────────
+
+export async function sendMagicLinkEmail(to: string, name: string, magicUrl: string): Promise<boolean> {
+  try {
+    const resend = getResend();
+    await resend.emails.send({
+      from: FROM_ADDRESS,
+      to,
+      subject: "🏀 Your BracketBuddy sign-in link",
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+        <body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 20px;">
+            <tr><td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#111;border-radius:12px;overflow:hidden;border:1px solid #222;">
+                <tr>
+                  <td style="background:linear-gradient(135deg,#1a0a00,#2d1200);padding:40px 40px 30px;text-align:center;">
+                    <div style="font-size:13px;font-weight:700;letter-spacing:3px;color:#e85d04;margin-bottom:8px;">POWERED BY UNRIVALED BUSINESS SOLUTIONS</div>
+                    <div style="font-size:42px;font-weight:900;letter-spacing:-1px;color:#fff;line-height:1;">BRACKET<span style="color:#e85d04;">BUDDY</span></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:40px;">
+                    <p style="color:#fff;font-size:22px;font-weight:700;margin:0 0 16px;">Hey ${name}, here's your sign-in link!</p>
+                    <p style="color:#aaa;font-size:15px;line-height:1.6;margin:0 0 24px;">
+                      Click the button below to sign in to BracketBuddy. This link expires in <strong style="color:#fff;">15 minutes</strong> and can only be used once.
+                    </p>
+                    <table cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 32px;">
+                      <tr>
+                        <td align="center">
+                          <a href="${magicUrl}"
+                             style="display:inline-block;background:#e85d04;color:#fff;font-size:16px;font-weight:800;letter-spacing:1px;text-decoration:none;padding:16px 40px;border-radius:8px;">
+                            SIGN IN TO BRACKETBUDDY →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                    <p style="color:#555;font-size:13px;margin:0;">If you didn't request this, you can safely ignore this email. The link will expire automatically.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background:#0a0a0a;padding:24px 40px;border-top:1px solid #222;text-align:center;">
+                    <p style="color:#555;font-size:12px;margin:0;">© 2026 Unrivaled Business Solutions · <a href="https://bracketbuddy.unrivaledbusinesssolutions.com" style="color:#e85d04;text-decoration:none;">bracketbuddy.unrivaledbusinesssolutions.com</a></p>
+                  </td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+        </body>
+        </html>
+      `,
+    });
+    return true;
+  } catch (err) {
+    console.error("[Email] Failed to send magic link email:", err);
+    return false;
+  }
+}

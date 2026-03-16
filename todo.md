@@ -331,3 +331,14 @@
 - [x] Add exportUsers tRPC procedure to tournament router (admin-only, returns all users as array)
 - [x] Add export query, handleExportUsers handler, and Export Users CSV button to Admin.tsx
 - [x] Import Download icon from lucide-react in Admin.tsx
+
+## Multiple Login Methods
+- [x] Add magicLinkTokens table to drizzle schema (token, email, name, expiresAt, usedAt)
+- [x] Push schema migration (pnpm db:push)
+- [x] Add /api/auth/magic-send endpoint: generate token, send email with link
+- [x] Add /api/auth/magic-verify endpoint: validate token, upsert user, set session cookie
+- [x] Add auth.emailSignIn tRPC procedure: accept name + email, upsert user, set session cookie (instant, no email needed)
+- [x] Build /login page with three options: Google Sign-In, Email Magic Link, Name+Email quick entry
+- [x] Update getLoginUrl() and all sign-in CTAs to point to /login instead of /api/oauth/google
+- [x] Update NavBar sign-in button to link to /login
+- [x] Wire /login route in App.tsx

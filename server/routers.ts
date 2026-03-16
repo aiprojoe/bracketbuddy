@@ -1,4 +1,4 @@
-import { COOKIE_NAME } from "@shared/const";
+import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { isMatchupLocked } from "../shared/tipoffSchedule";
@@ -34,6 +34,8 @@ import { eq, sql, desc, and } from "drizzle-orm";
 import { syncEspnScores, getLiveScores, getTournamentConfig } from "./espnSync";
 import { getSchedulerStatus, triggerImmediateSync } from "./syncScheduler";
 import { sendBulkLockReminders, sendWelcomeEmail } from "./email";
+import { upsertUser, getUserByOpenId } from "./db";
+import { sdk } from "./_core/sdk";
 
 // ─── Seed on startup ──────────────────────────────────────────────────────────
 seedTeamsIfEmpty().catch(console.error);
@@ -90,6 +92,23 @@ export const appRouter = router({
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
+    // Quick sign-in with name + email (no password, no email verification)
+    emailSignIn: publicProcedure
+      .input(z.object({ name: z.string().min(1).max(100), email: z.string().email() }))
+      .mutation(async ({ ctx, input }) => {
+        const emailLower = input.email.trim().toLowerCase();
+        const openId = `email:${emailLower}`;
+        const existingUser = await getUserByOpenId(openId);
+        const isNewUser = !existingUser;
+        await upsertUser({ openId, name: input.name.trim(), email: emailLower, loginMethod: "email", lastSignedIn: new Date() });
+        if (isNewUser) {
+          sendWelcomeEmail(emailLower, input.name.trim()).catch(console.error);
+        }
+        const sessionToken = await sdk.createSessionToken(openId, { name: input.name.trim(), expiresInMs: ONE_YEAR_MS });
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        return { success: true };
+      }),
   }),
 
   // ─── Teams ──────────────────────────────────────────────────────────────────

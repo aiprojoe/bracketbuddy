@@ -211,3 +211,16 @@ export const tournamentConfig = mysqlTable("tournamentConfig", {
 });
 
 export type TournamentConfig = typeof tournamentConfig.$inferSelect;
+
+// Magic link tokens for passwordless email sign-in
+export const magicLinkTokens = mysqlTable("magicLinkTokens", {
+  id: int("id").autoincrement().primaryKey(),
+  token: varchar("token", { length: 64 }).notNull().unique(),
+  email: varchar("email", { length: 320 }).notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MagicLinkToken = typeof magicLinkTokens.$inferSelect;
