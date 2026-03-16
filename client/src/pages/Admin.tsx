@@ -29,6 +29,7 @@ import {
   Users,
   ChevronDown,
   ChevronUp,
+  Download,
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -195,6 +196,42 @@ export default function Admin() {
     }
   }
 
+  const { refetch: fetchUsers, isFetching: exportingUsers } = trpc.tournament.exportUsers.useQuery(
+    undefined,
+    { enabled: false }
+  );
+
+  const handleExportUsers = async () => {
+    const result = await fetchUsers();
+    const exportData = result.data;
+    if (!exportData || exportData.length === 0) {
+      toast.error("No users to export");
+      return;
+    }
+    const headers = ["ID", "Name", "Email", "Login Method", "Total Points", "Bracket Count", "Signed Up", "Last Seen"];
+    const rows = exportData.map((u) => [
+      u.id,
+      u.name ?? "",
+      u.email ?? "",
+      u.loginMethod ?? "",
+      u.totalPoints,
+      u.bracketCount,
+      new Date(u.createdAt).toLocaleDateString(),
+      new Date(u.lastSignedIn).toLocaleDateString(),
+    ]);
+    const csv = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `bracketbuddy-users-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${exportData.length} users!`);
+  };
+
   const sendLockRemindersMutation = trpc.email.sendLockReminders.useMutation({
     onSuccess: (result) => toast.success(`📧 Sent ${result.sent} reminder emails! (${result.failed} failed)`),
     onError: (err) => toast.error(`Email failed: ${err.message}`),
@@ -277,6 +314,34 @@ export default function Admin() {
               <div className="text-xs text-white/40 mt-1">{stat.label}</div>
             </div>
           ))}
+        </div>
+
+        {/* User Export */}
+        <div className="rounded-2xl border border-white/10 bg-[oklch(0.14_0.015_260)] p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="font-display text-2xl text-white">USER EXPORT</h2>
+              <p className="text-white/50 text-sm mt-1">
+                Download all registered users as a CSV — name, email, points, sign-up date.
+              </p>
+            </div>
+            <Button
+              onClick={handleExportUsers}
+              disabled={exportingUsers}
+              className="bg-[oklch(0.58_0.18_145)] hover:bg-[oklch(0.65_0.2_145)] text-white font-bold flex items-center gap-2"
+            >
+              {exportingUsers ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Download size={16} />
+              )}
+              Export Users CSV
+            </Button>
+          </div>
+          <p className="text-white/30 text-xs">
+            Includes: ID, name, email, login method, total points, bracket count, sign-up date, last seen.
+            Only you can access this.
+          </p>
         </div>
 
         {/* Controls */}

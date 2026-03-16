@@ -756,6 +756,29 @@ IMPORTANT: Only output JSON. No other text.`,
 
         return { success: true, updated, inserted, picksCleared };
       }),
+
+    // Admin: export all registered users as a data array for CSV download
+    exportUsers: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
+      }
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+      const allUsers = await db
+        .select({
+          id: users.id,
+          name: users.name,
+          email: users.email,
+          loginMethod: users.loginMethod,
+          totalPoints: users.totalPoints,
+          bracketCount: users.bracketCount,
+          createdAt: users.createdAt,
+          lastSignedIn: users.lastSignedIn,
+        })
+        .from(users)
+        .orderBy(desc(users.createdAt));
+      return allUsers;
+    }),
   }),
 
   // ─── Email ──────────────────────────────────────────────────────────────────

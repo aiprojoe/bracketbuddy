@@ -326,3 +326,8 @@
 - [x] Replace req.protocol + req.get("host") with APP_URL env var in /api/oauth/google route
 - [x] Replace req.protocol + req.get("host") with APP_URL env var in /api/oauth/callback route
 - [x] Add APP_URL=https://bracketbuddy.unrivaledbusinesssolutions.com secret
+
+## Admin User Export
+- [x] Add exportUsers tRPC procedure to tournament router (admin-only, returns all users as array)
+- [x] Add export query, handleExportUsers handler, and Export Users CSV button to Admin.tsx
+- [x] Import Download icon from lucide-react in Admin.tsx
