@@ -61,8 +61,8 @@ const achievements = [
   { icon: "🎤", name: "Voice Commander", rarity: "rare", desc: "10 voice picks made" },
 ];
 
-// Countdown to bracket lock (March 18, 2026 12:00 PM ET)
-const LOCK_DATE = new Date("2026-03-18T12:00:00-04:00");
+// Countdown to bracket lock (March 20, 2026 12:15 PM ET — Thursday Round of 64 tip-off)
+const LOCK_DATE = new Date("2026-03-20T12:15:00-04:00");
 
 function useCountdown(target: Date) {
   const [timeLeft, setTimeLeft] = useState(() => Math.max(0, target.getTime() - Date.now()));
@@ -206,7 +206,7 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            <p className="text-white/40 text-sm mt-4">March 18 · First Four tip-off · No changes after lock</p>
+            <p className="text-white/40 text-sm mt-4">March 20 · Round of 64 tip-off · No changes after lock</p>
           </div>
         </section>
       )}
@@ -335,7 +335,7 @@ export default function Home() {
           <Crown size={48} className="text-[oklch(0.78_0.18_80)] mx-auto mb-6" />
           <h2 className="font-display text-6xl text-white mb-4">READY TO DOMINATE?</h2>
           <p className="text-white/60 text-xl mb-8">
-            The bracket is out. Get your picks in before March 18 and show the world who the real March Madness oracle is.
+            The bracket is out. Get your picks in before March 20 (Thursday tip-off) — First Four picks welcome! Show the world who the real March Madness oracle is.
           </p>
           {isAuthenticated ? (
             <Link href="/bracket">

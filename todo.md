@@ -209,3 +209,11 @@
 - [x] getR64Team() checks isFirstFour flag: if 2 play-in teams exist, uses picked winner; else falls back to normal team
 - [x] Tabs: First Four | East | West | South | Midwest | Final Four (all working)
 - [x] 0 TypeScript errors, 28/28 tests passing
+
+## Lock Deadline Update (March 20 — Thursday Round of 64)
+- [x] Update all "March 18" lock deadline references to "March 20" (Thursday tip-off 12:15pm ET)
+- [x] Update countdown timer target date in Home.tsx (2026-03-20T12:15:00-04:00)
+- [x] Update copy in Home hero and CTA sections
+- [x] Update copy in First Four tab explanation (Picks lock March 20)
+- [x] Update Admin panel ESPN hint to show First Four: March 18-19, Round of 64: March 20-21
+- [x] No LOCK_DATE in shared/bracketData.ts (only in Home.tsx — already updated)

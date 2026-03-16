@@ -471,7 +471,7 @@ export default function Admin() {
           <div className="p-8 rounded-xl border border-dashed border-white/10 text-center">
             <Activity size={32} className="text-white/20 mx-auto mb-3" />
             <p className="text-white/40 text-sm">No game data yet. Click "Sync ESPN Now" to fetch tournament scores.</p>
-            <p className="text-white/20 text-xs mt-1">The ESPN API will have data once the tournament begins (March 18, 2026).</p>
+            <p className="text-white/20 text-xs mt-1">The ESPN API will have data once the tournament begins (First Four: March 18–19, Round of 64: March 20–21).</p>
           </div>
         )}
       </div>

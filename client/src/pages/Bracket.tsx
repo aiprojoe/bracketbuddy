@@ -616,7 +616,7 @@ export default function Bracket() {
           <div>
             <div className="flex items-center gap-3 mb-6">
               <h2 className="font-display text-3xl text-white">FIRST FOUR</h2>
-              <div className="text-sm text-white/40">Play-in games · March 18–19 · Winners advance to Round of 64</div>
+              <div className="text-sm text-white/40">Play-in games · March 18–19 · Winners advance to Round of 64 · Picks lock March 20</div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl">
               {getFirstFourMatchups().map((ff) => (
