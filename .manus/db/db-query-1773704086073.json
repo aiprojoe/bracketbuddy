@@ -1,0 +1,74 @@
+{
+  "query": "SELECT id, name, shortName, seed, region, isFirstFour FROM teams WHERE isFirstFour = 1 ORDER BY region, seed LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute SELECT id, name, shortName, seed, region, isFirstFour FROM teams WHERE isFirstFour = 1 ORDER BY region, seed LIMIT 20;",
+  "rows": [
+    {
+      "id": "60027",
+      "name": "Texas Longhorns",
+      "shortName": "Texas",
+      "seed": "11",
+      "region": "West",
+      "isFirstFour": "1"
+    },
+    {
+      "id": "60028",
+      "name": "NC State Wolfpack",
+      "shortName": "NC State",
+      "seed": "11",
+      "region": "West",
+      "isFirstFour": "1"
+    },
+    {
+      "id": "60067",
+      "name": "Prairie View A&M Panthers",
+      "shortName": "Prairie View",
+      "seed": "16",
+      "region": "South",
+      "isFirstFour": "1"
+    },
+    {
+      "id": "60068",
+      "name": "Lehigh Mountain Hawks",
+      "shortName": "Lehigh",
+      "seed": "16",
+      "region": "South",
+      "isFirstFour": "1"
+    },
+    {
+      "id": "60045",
+      "name": "Miami (Ohio) RedHawks",
+      "shortName": "Miami OH",
+      "seed": "11",
+      "region": "Midwest",
+      "isFirstFour": "1"
+    },
+    {
+      "id": "60044",
+      "name": "SMU Mustangs",
+      "shortName": "SMU",
+      "seed": "11",
+      "region": "Midwest",
+      "isFirstFour": "1"
+    },
+    {
+      "id": "60050",
+      "name": "UMBC Retrievers",
+      "shortName": "UMBC",
+      "seed": "16",
+      "region": "Midwest",
+      "isFirstFour": "1"
+    },
+    {
+      "id": "60051",
+      "name": "Howard Bison",
+      "shortName": "Howard",
+      "seed": "16",
+      "region": "Midwest",
+      "isFirstFour": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tshortName\tseed\tregion\tisFirstFour\n60027\tTexas Longhorns\tTexas\t11\tWest\t1\n60028\tNC State Wolfpack\tNC State\t11\tWest\t1\n60067\tPrairie View A&M Panthers\tPrairie View\t16\tSouth\t1\n60068\tLehigh Mountain Hawks\tLehigh\t16\tSouth\t1\n60045\tMiami (Ohio) RedHawks\tMiami OH\t11\tMidwest\t1\n60044\tSMU Mustangs\tSMU\t11\tMidwest\t1\n60050\tUMBC Retrievers\tUMBC\t16\tMidwest\t1\n60051\tHoward Bison\tHoward\t16\tMidwest\t1\n",
+  "stderr": "",
+  "execution_time_ms": 106
+}

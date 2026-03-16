@@ -73,11 +73,12 @@ export interface FirstFourMatchup {
   label: string;       // display label
 }
 
+// 2026 actual First Four matchups (matches ESPN/DB team data)
 export const FIRST_FOUR_MATCHUPS: FirstFourMatchup[] = [
-  { id: "FirstFour-0", region: "East",    winnerSeed: 16, label: "East 16 Play-In" },
-  { id: "FirstFour-1", region: "West",    winnerSeed: 16, label: "West 16 Play-In" },
-  { id: "FirstFour-2", region: "South",   winnerSeed: 11, label: "South 11 Play-In" },
-  { id: "FirstFour-3", region: "Midwest", winnerSeed: 11, label: "Midwest 11 Play-In" },
+  { id: "FirstFour-0", region: "West",    winnerSeed: 11, label: "West 11 Play-In (Texas vs NC State)" },
+  { id: "FirstFour-1", region: "South",   winnerSeed: 16, label: "South 16 Play-In (Prairie View vs Lehigh)" },
+  { id: "FirstFour-2", region: "Midwest", winnerSeed: 11, label: "Midwest 11 Play-In (SMU vs Miami OH)" },
+  { id: "FirstFour-3", region: "Midwest", winnerSeed: 16, label: "Midwest 16 Play-In (UMBC vs Howard)" },
 ];
 
 // Standard seeding order for display

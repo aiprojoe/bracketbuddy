@@ -352,3 +352,12 @@
 - [x] Add deleteBracket tRPC procedure (admin-only)
 - [x] Add user list with delete buttons to Admin panel
 - [x] Add confirmation dialog before delete
+
+## First Four Play-In Fix
+- [x] Diagnose why play-in game slots show TBD instead of team names
+- [x] Fix bracket rendering or DB data so First Four teams are pickable
+
+## Public Bracket Viewing
+- [x] Add getBracketById tRPC procedure (public — any logged-in user can view any bracket)
+- [x] Create /bracket/view/:bracketId page showing read-only bracket
+- [x] Add "View Bracket" links from Leaderboard to each user's bracket

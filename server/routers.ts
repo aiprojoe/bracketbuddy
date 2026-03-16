@@ -379,6 +379,30 @@ export const appRouter = router({
     get: publicProcedure.query(async () => {
       return getLeaderboard(50);
     }),
+    // Public: view any bracket by ID (read-only)
+    getBracketById: publicProcedure
+      .input(z.object({ bracketId: z.number() }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+        const bracketRows = await db
+          .select({
+            id: brackets.id,
+            name: brackets.name,
+            totalPoints: brackets.totalPoints,
+            correctPicks: brackets.correctPicks,
+            maxPossiblePoints: brackets.maxPossiblePoints,
+            userId: brackets.userId,
+          })
+          .from(brackets)
+          .where(eq(brackets.id, input.bracketId))
+          .limit(1);
+        if (!bracketRows.length) throw new TRPCError({ code: "NOT_FOUND", message: "Bracket not found" });
+        const bracket = bracketRows[0];
+        const ownerRows = await db.select({ name: users.name }).from(users).where(eq(users.id, bracket.userId)).limit(1);
+        const bracketPicks = await getBracketPicks(bracket.id);
+        return { bracket, ownerName: ownerRows[0]?.name ?? "Unknown", picks: bracketPicks };
+      }),
     getComments: publicProcedure.query(async () => {
       return getComments(30);
     }),

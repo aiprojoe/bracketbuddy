@@ -166,6 +166,14 @@ export default function Leaderboard() {
                         </div>
                       )}
                     </div>
+                    {/* View Bracket */}
+                    {entry.bracketId && (
+                      <Link href={isMe ? "/bracket" : `/bracket/view/${entry.bracketId}`}>
+                        <button className="text-xs text-white/40 hover:text-[oklch(0.65_0.22_35)] transition-colors px-2 py-1 rounded border border-white/10 hover:border-[oklch(0.65_0.22_35/0.4)] whitespace-nowrap flex-shrink-0">
+                          {isMe ? "My Bracket" : "View"}
+                        </button>
+                      </Link>
+                    )}
                   </div>
                 );
               })}
