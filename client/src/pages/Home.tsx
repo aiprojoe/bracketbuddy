@@ -61,9 +61,14 @@ const achievements = [
   { icon: "🎤", name: "Voice Commander", rarity: "rare", desc: "10 voice picks made" },
 ];
 
-// Global lock: Thursday March 19, 12:15 PM ET (Round of 64 tip-off)
-// First Four games lock individually at tip-off March 17-18
-const GLOBAL_LOCK_DATE = new Date("2026-03-19T16:15:00Z"); // Thu Mar 19, 12:15 PM ET
+// Dynamic lock date: First Four tips off March 17 at 6:40 PM ET; Round of 64 tips off March 19 at 12:15 PM ET
+const _now = new Date();
+const FIRST_FOUR_DATE = new Date("2026-03-17T22:40:00Z"); // Mon Mar 17, 6:40 PM ET
+const R64_DATE = new Date("2026-03-19T16:15:00Z");         // Wed Mar 19, 12:15 PM ET
+const GLOBAL_LOCK_DATE = _now < FIRST_FOUR_DATE ? FIRST_FOUR_DATE : R64_DATE;
+const LOCK_LABEL = _now < FIRST_FOUR_DATE
+  ? "First Four tips off TOMORROW — picks lock per game at tip-off"
+  : "Round of 64 · March 19 · Picks lock at each tip-off";
 
 function useCountdown(target: Date) {
   const [timeLeft, setTimeLeft] = useState(() => Math.max(0, target.getTime() - Date.now()));
@@ -207,7 +212,7 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            <p className="text-white/40 text-sm mt-4">Most picks lock Thursday March 19 · First Four games lock at tip-off March 17–18</p>
+            <p className="text-white/40 text-sm mt-4">{LOCK_LABEL}</p>
           </div>
         </section>
       )}
@@ -382,7 +387,7 @@ export default function Home() {
           <Crown size={48} className="text-[oklch(0.78_0.18_80)] mx-auto mb-6" />
           <h2 className="font-display text-6xl text-white mb-4">READY TO DOMINATE?</h2>
           <p className="text-white/60 text-xl mb-8">
-            Most picks are open until Thursday March 19 — but First Four games lock at tip-off tomorrow night. Don't wait! Show the world who the real March Madness oracle is.
+            First Four tips off TOMORROW March 17 — picks lock at each game’s tip-off. Most picks are open until Thursday March 19. Don’t wait!
           </p>
           {isAuthenticated ? (
             <Link href="/bracket">

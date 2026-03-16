@@ -342,3 +342,7 @@
 - [x] Update getLoginUrl() and all sign-in CTAs to point to /login instead of /api/oauth/google
 - [x] Update NavBar sign-in button to link to /login
 - [x] Wire /login route in App.tsx
+
+## Urgent Copy Fixes (March 17 Launch)
+- [x] Fix LOCK_DATE in Home.tsx to use First Four date (March 17) with dynamic label
+- [x] Fix CTA copy in Home.tsx from "March 20" to First Four tomorrow March 17
