@@ -207,7 +207,7 @@ export default function PrintBracket() {
         </div>
         <div style={{ textAlign: "right" }}>
           <div style={{ fontSize: "11px", fontWeight: "bold" }}>{userName}</div>
-          <div style={{ fontSize: "9px", color: "#888" }}>bracketai-4984wqi9.manus.space</div>
+          <div style={{ fontSize: "9px", color: "#888" }}>bracketbuddy.unrivaledbusinesssolutions.com</div>
         </div>
       </div>
 
@@ -370,7 +370,7 @@ export default function PrintBracket() {
 
       {/* Footer */}
       <div style={{ marginTop: "8px", fontSize: "8px", color: "#aaa", textAlign: "center" }}>
-        Printed from BracketBuddy · bracketai-4984wqi9.manus.space · 2026 NCAA Tournament · Highlighted picks = your selections
+        Printed from BracketBuddy · bracketbuddy.unrivaledbusinesssolutions.com · 2026 NCAA Tournament · Highlighted picks = your selections
       </div>
 
       {/* Print button (hidden when printing) */}

@@ -188,3 +188,12 @@
 - [x] BUG FIXED: upsertPick() was not reversing points when a user changed a pick that had already been scored. Now: if pick changes after scoring, old points are reversed from bracket + user totals, and isCorrect/pointsEarned/actualWinnerId are reset so sync engine re-scores on next run.
 - [x] MATCHUP ID MATCHING: Verified — buildMatchupId() in espnSync.ts uses same format as Bracket.tsx (e.g. "East-round64-0"). Round of 64 uses seed-pair index; later rounds use minSeed v maxSeed key.
 - [x] 0 TypeScript errors, 28/28 tests passing after fix
+
+## Custom Domain & Branding Cleanup
+- [x] Remove PoweredByFooter (Manus badge) from App.tsx
+- [x] Verify no "manus" text appears anywhere in user-visible UI (0 matches)
+- [x] Update app meta title/description to BracketBuddy only (author: Unrivaled Business Solutions)
+- [x] Add Open Graph + Twitter Card meta tags
+- [x] Replace manus.space URL in PrintBracket header and footer with bracketbuddy.unrivaledbusinesssolutions.com
+- [ ] Save checkpoint and publish
+- [ ] Provide DNS CNAME instructions for bracketbuddy.unrivaledbusinesssolutions.com
