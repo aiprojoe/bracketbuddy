@@ -27,7 +27,10 @@ let _pool: Pool | null = null;
  * call creates a fresh pool (handles rare pool-level failures).
  */
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
+  if (!process.env.DATABASE_URL) {
+    throw new Error("[Database] DATABASE_URL is not set. Check your environment variables.");
+  }
+  if (!_db) {
     try {
       _pool = mysql.createPool({
         uri: process.env.DATABASE_URL,
@@ -39,9 +42,10 @@ export async function getDb() {
       });
       _db = drizzle(_pool);
     } catch (error) {
-      console.warn("[Database] Failed to create pool:", error);
       _db = null;
       _pool = null;
+      console.error("[Database] Failed to create connection pool:", error);
+      throw new Error(`[Database] Failed to connect: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
   return _db;

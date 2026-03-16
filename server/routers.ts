@@ -39,6 +39,27 @@ import { sendBulkLockReminders, sendWelcomeEmail } from "./email";
 seedTeamsIfEmpty().catch(console.error);
 seedAchievementsIfEmpty().catch(console.error);
 
+// In-memory AI rate limiter: max 20 calls per user per hour
+const AI_RATE_LIMIT = 20;
+const AI_RATE_WINDOW_MS = 60 * 60 * 1000;
+const aiCallCounts = new Map<number, { count: number; windowStart: number }>();
+
+function checkAiRateLimit(userId: number): void {
+  const now = Date.now();
+  const record = aiCallCounts.get(userId);
+  if (!record || now - record.windowStart > AI_RATE_WINDOW_MS) {
+    aiCallCounts.set(userId, { count: 1, windowStart: now });
+    return;
+  }
+  if (record.count >= AI_RATE_LIMIT) {
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: `AI rate limit reached. You can make ${AI_RATE_LIMIT} AI requests per hour. Try again later.`,
+    });
+  }
+  record.count += 1;
+}
+
 const roundEnum = z.enum([
   "firstfour",
   "round64",
@@ -441,18 +462,18 @@ export const appRouter = router({
 
   // ─── AI Analysis ─────────────────────────────────────────────────────────────
   ai: router({
-    analyzeBracket: publicProcedure
+    analyzeBracket: protectedProcedure
       .input(
         z.object({
           region: z.string().optional(),
           question: z.string().optional(),
         })
       )
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        checkAiRateLimit(ctx.user.id);
         const teams = await getAllTeams();
         const teamSummary = teams
-          .slice(0, 32)
-          .map((t) => `${t.seed} ${t.shortName} (${t.conference}, ${t.record})`)
+          .map((t) => `${t.seed} ${t.shortName} (${t.region}, ${t.conference ?? "Independent"}, ${t.record ?? "N/A"})`)
           .join(", ");
 
         const prompt = input.question
@@ -461,7 +482,7 @@ export const appRouter = router({
 
         const response = await invokeLLM({
           messages: [
-            { role: "system", content: "You are Bracket Buddy, a fun and knowledgeable March Madness AI assistant. Be energetic, use emojis, and make bold predictions." },
+            { role: "system", content: "You are Bracket Buddy, a fun and knowledgeable March Madness AI assistant. Be energetic, use emojis, and make bold predictions. Always reference specific teams by name." },
             { role: "user", content: prompt },
           ],
         });
@@ -473,9 +494,10 @@ export const appRouter = router({
 
     // Parse voice speech to detect a bracket pick intent
     // Returns { isPick: true, teamName, teamId, confirmMessage } or { isPick: false, response }
-    parseVoicePick: publicProcedure
+    parseVoicePick: protectedProcedure
       .input(z.object({ speech: z.string().min(1).max(500) }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        checkAiRateLimit(ctx.user.id);
         const teams = await getAllTeams();
         const teamList = teams.map((t) => ({
           id: t.id,
@@ -506,7 +528,7 @@ IMPORTANT: Only output JSON. No other text.`,
             },
             { role: "user", content: input.speech },
           ],
-          response_format: { type: "json_object" } as any,
+          response_format: { type: "json_object" },
         });
 
         const rawContent = response.choices[0]?.message?.content ?? "{}";
@@ -531,13 +553,13 @@ IMPORTANT: Only output JSON. No other text.`,
       }),
 
     // Free text/voice chat — no VAPI, uses built-in LLM
-    chat: publicProcedure
+    chat: protectedProcedure
       .input(z.object({ message: z.string().min(1).max(500) }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        checkAiRateLimit(ctx.user.id);
         const teams = await getAllTeams();
         const teamSummary = teams
-          .slice(0, 32)
-          .map((t) => `${t.seed} ${t.shortName} (${t.region}, ${t.conference}, ${t.record})`)
+          .map((t) => `${t.seed} ${t.shortName} (${t.region}, ${t.conference ?? "Independent"}, ${t.record ?? "N/A"})`)
           .join(", ");
 
         const response = await invokeLLM({

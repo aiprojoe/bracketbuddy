@@ -7,7 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { useState, useEffect, useCallback } from "react";
 import { useConfetti } from "@/hooks/useConfetti";
 import { toast } from "sonner";
-import { Mic, Zap, Share2, RotateCcw, ChevronRight, Trophy, Sparkles, Swords, Printer, Wand2, Info, ZoomIn, ZoomOut } from "lucide-react";
+import { Mic, Zap, Share2, RotateCcw, ChevronRight, Trophy, Sparkles, Swords, Printer, Wand2, Info, ZoomIn, ZoomOut, AlertTriangle } from "lucide-react";
 import ShareBracketModal from "@/components/ShareBracketModal";
 import { type TeamData, SEED_PAIRS_R64, FIRST_FOUR_MATCHUPS, type Region, type Round, getUpsetProbability, getSeedH2H } from "../../../shared/bracketData";
 import VoiceAssistant from "@/components/VoiceAssistant";
@@ -599,10 +599,42 @@ export default function Bracket() {
     return winnerId ? teams.find((t) => t.id === winnerId) : undefined;
   })();
 
+  // First Four lock warning: show banner if any First Four game tips off within 24 hours
+  const firstFourWarning = (() => {
+    const FIRST_FOUR_TIPOFFS = [
+      { label: "Midwest #16 (UMBC vs Howard)", time: new Date("2026-03-17T22:40:00Z") },
+      { label: "West #11 (Texas vs NC State)", time: new Date("2026-03-18T01:15:00Z") },
+      { label: "South #16 (Prairie View vs Lehigh)", time: new Date("2026-03-18T22:40:00Z") },
+      { label: "Midwest #11 (Miami OH vs SMU)", time: new Date("2026-03-19T01:15:00Z") },
+    ];
+    const now = new Date();
+    const locking = FIRST_FOUR_TIPOFFS.filter(({ time }) => {
+      const diffMs = time.getTime() - now.getTime();
+      return diffMs > 0 && diffMs < 24 * 60 * 60 * 1000;
+    });
+    const upcoming = FIRST_FOUR_TIPOFFS.filter(({ time }) => time > now);
+    if (locking.length === 0 || upcoming.length === 0) return null;
+    return locking;
+  })();
+
   return (
     <div className="min-h-screen bg-[oklch(0.1_0.01_260)] text-white">
       <NavBar />
       <LiveScoresBanner />
+
+      {firstFourWarning && firstFourWarning.length > 0 && (
+        <div className="bg-amber-500/15 border-b border-amber-500/40 px-4 py-2.5">
+          <div className="max-w-full mx-auto flex items-start gap-2.5 text-amber-300">
+            <AlertTriangle size={16} className="flex-shrink-0 mt-0.5" />
+            <p className="text-sm leading-snug">
+              <span className="font-bold">⏰ First Four picks lock at tip-off tonight!</span>
+              {" "}Lock in your picks before games start:{" "}
+              <span className="text-amber-200">{firstFourWarning.map(g => g.label).join(" · ")}</span>
+              {" — "}picks for these matchups cannot be changed once the game tips off.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div className="border-b border-white/10 bg-[oklch(0.12_0.01_260)]">

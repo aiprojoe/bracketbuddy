@@ -286,3 +286,11 @@
 - [x] Add prize/stakes section to Home page (1st/2nd/3rd place podium + 4 achievement badges)
 - [x] Fix blank bracket print — ?blank=1 URL param hides all picks; Print Blank button added to print page
 - [x] Verify user bracket print works correctly (picks highlighted in yellow, champion shown, footer URL correct)
+
+## Code Fixes (March 16 — Batch 2)
+- [x] Add First Four lock warning banner to Bracket.tsx (AlertTriangle, 24hr window)
+- [x] Protect AI routes: analyzeBracket, parseVoicePick, chat → protectedProcedure
+- [x] Add in-memory AI rate limiter (20 calls/user/hour) to routers.ts
+- [x] Fix analyzeBracket: add teamSummary variable (all 68 teams) + update system prompt
+- [x] Fix response_format `as any` cast in parseVoicePick
+- [x] Fix silent DB failure: getDb() now throws loudly instead of returning null
