@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Sparkles, Loader2, Send } from "lucide-react";
+import { X, Sparkles, Loader2, Send, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 
@@ -18,32 +18,47 @@ const QUICK_QUESTIONS = [
 
 export default function AIAnalysis({ onClose }: AIAnalysisProps) {
   const [question, setQuestion] = useState("");
-  const [analysis, setAnalysis] = useState<string | null>(null);
   const [history, setHistory] = useState<Array<{ q: string; a: string }>>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const analyzeMutation = trpc.ai.analyzeBracket.useMutation({
     onSuccess: (data) => {
-      const text = typeof data.analysis === 'string' ? data.analysis : String(data.analysis);
-      if (question) {
-        setHistory((prev) => [...prev, { q: question, a: text }]);
-        setQuestion("");
-      }
-      setAnalysis(text);
+      const text = typeof data.analysis === "string" ? data.analysis : String(data.analysis);
+      setHistory((prev) => {
+        // Replace the last pending entry (empty a) or add new
+        const last = prev[prev.length - 1];
+        if (last && last.a === "") {
+          return [...prev.slice(0, -1), { q: last.q, a: text }];
+        }
+        return [...prev, { q: "", a: text }];
+      });
+      setError(null);
+    },
+    onError: (err) => {
+      setError(err.message || "Something went wrong. Please try again.");
+      // Remove the pending entry
+      setHistory((prev) => {
+        const last = prev[prev.length - 1];
+        if (last && last.a === "") return prev.slice(0, -1);
+        return prev;
+      });
     },
   });
 
   const handleAsk = (q?: string) => {
-    const finalQ = q ?? question;
-    if (!finalQ.trim() && !q) return;
-    analyzeMutation.mutate({ question: finalQ || undefined });
-    if (q) setHistory((prev) => [...prev, { q: finalQ, a: "" }]);
+    const finalQ = (q ?? question).trim();
+    if (!finalQ) return;
+    setError(null);
+    setHistory((prev) => [...prev, { q: finalQ, a: "" }]);
+    setQuestion("");
+    analyzeMutation.mutate({ question: finalQ });
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-[oklch(0.14_0.015_260)] border border-white/15 rounded-2xl overflow-hidden shadow-2xl">
+      <div className="w-full max-w-lg bg-[oklch(0.14_0.015_260)] border border-white/15 rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-gradient-to-r from-[oklch(0.55_0.2_250/0.1)] to-transparent">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-gradient-to-r from-[oklch(0.55_0.2_250/0.1)] to-transparent flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[oklch(0.55_0.2_250/0.2)] flex items-center justify-center">
               <Sparkles size={18} className="text-[oklch(0.55_0.2_250)]" />
@@ -59,9 +74,9 @@ export default function AIAnalysis({ onClose }: AIAnalysisProps) {
         </div>
 
         {/* Content */}
-        <div className="p-5 max-h-[60vh] overflow-y-auto space-y-4">
-          {/* Quick Questions */}
-          {history.length === 0 && !analysis && (
+        <div className="p-5 overflow-y-auto flex-1 space-y-4">
+          {/* Quick Questions — only show when no history */}
+          {history.length === 0 && (
             <div>
               <p className="text-sm text-white/50 mb-3">Ask me anything about the 2026 tournament:</p>
               <div className="grid grid-cols-2 gap-2">
@@ -70,7 +85,7 @@ export default function AIAnalysis({ onClose }: AIAnalysisProps) {
                     key={q}
                     onClick={() => handleAsk(q)}
                     disabled={analyzeMutation.isPending}
-                    className="text-left px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white/70 hover:text-white hover:border-[oklch(0.55_0.2_250/0.4)] hover:bg-[oklch(0.55_0.2_250/0.08)] transition-all"
+                    className="text-left px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white/70 hover:text-white hover:border-[oklch(0.55_0.2_250/0.4)] hover:bg-[oklch(0.55_0.2_250/0.08)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {q}
                   </button>
@@ -82,59 +97,56 @@ export default function AIAnalysis({ onClose }: AIAnalysisProps) {
           {/* Conversation History */}
           {history.map((item, i) => (
             <div key={i} className="space-y-2">
-              <div className="flex justify-end">
-                <div className="bg-[oklch(0.55_0.2_250/0.2)] border border-[oklch(0.55_0.2_250/0.3)] rounded-xl px-3 py-2 text-sm text-white max-w-xs">
-                  {item.q}
+              {item.q && (
+                <div className="flex justify-end">
+                  <div className="bg-[oklch(0.55_0.2_250/0.2)] border border-[oklch(0.55_0.2_250/0.3)] rounded-xl px-3 py-2 text-sm text-white max-w-xs">
+                    {item.q}
+                  </div>
                 </div>
-              </div>
-              {item.a && (
+              )}
+              {item.a ? (
                 <div className="flex gap-2">
                   <div className="w-7 h-7 rounded-full bg-[oklch(0.65_0.22_35/0.2)] flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-sm">🏀</span>
                   </div>
-                  <div className="bg-[oklch(0.65_0.22_35/0.1)] border border-[oklch(0.65_0.22_35/0.2)] rounded-xl px-3 py-2 text-sm text-white/90 leading-relaxed flex-1">
+                  <div className="bg-[oklch(0.65_0.22_35/0.1)] border border-[oklch(0.65_0.22_35/0.2)] rounded-xl px-3 py-2 text-sm text-white/90 leading-relaxed flex-1 whitespace-pre-wrap">
                     {item.a}
+                  </div>
+                </div>
+              ) : (
+                /* Pending / loading bubble */
+                <div className="flex gap-2 items-center">
+                  <div className="w-7 h-7 rounded-full bg-[oklch(0.65_0.22_35/0.2)] flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm">🏀</span>
+                  </div>
+                  <div className="bg-[oklch(0.65_0.22_35/0.1)] border border-[oklch(0.65_0.22_35/0.2)] rounded-xl px-4 py-3 flex items-center gap-2">
+                    <Loader2 size={14} className="animate-spin text-[oklch(0.65_0.22_35)]" />
+                    <span className="text-sm text-white/60">Analyzing the tournament...</span>
                   </div>
                 </div>
               )}
             </div>
           ))}
 
-          {/* Loading */}
-          {analyzeMutation.isPending && (
-            <div className="flex gap-2 items-center">
-              <div className="w-7 h-7 rounded-full bg-[oklch(0.65_0.22_35/0.2)] flex items-center justify-center flex-shrink-0">
-                <span className="text-sm">🏀</span>
-              </div>
-              <div className="bg-[oklch(0.65_0.22_35/0.1)] border border-[oklch(0.65_0.22_35/0.2)] rounded-xl px-4 py-3 flex items-center gap-2">
-                <Loader2 size={14} className="animate-spin text-[oklch(0.65_0.22_35)]" />
-                <span className="text-sm text-white/60">Analyzing the tournament...</span>
-              </div>
-            </div>
-          )}
-
-          {/* Initial Analysis */}
-          {analysis && history.length === 0 && (
-            <div className="flex gap-2">
-              <div className="w-7 h-7 rounded-full bg-[oklch(0.65_0.22_35/0.2)] flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-sm">🏀</span>
-              </div>
-              <div className="bg-[oklch(0.65_0.22_35/0.1)] border border-[oklch(0.65_0.22_35/0.2)] rounded-xl px-3 py-2 text-sm text-white/90 leading-relaxed flex-1">
-                {analysis}
-              </div>
+          {/* Error */}
+          {error && (
+            <div className="flex gap-2 items-start p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+              <AlertCircle size={16} className="text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-300">{error}</p>
             </div>
           )}
         </div>
 
         {/* Input */}
-        <div className="px-5 py-4 border-t border-white/10">
+        <div className="px-5 py-4 border-t border-white/10 flex-shrink-0">
           <div className="flex gap-2">
             <input
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleAsk()}
+              onKeyDown={(e) => e.key === "Enter" && !analyzeMutation.isPending && handleAsk()}
               placeholder="Ask about any team, matchup, or prediction..."
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[oklch(0.55_0.2_250/0.5)] transition-colors"
+              disabled={analyzeMutation.isPending}
+              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[oklch(0.55_0.2_250/0.5)] transition-colors disabled:opacity-50"
             />
             <Button
               onClick={() => handleAsk()}
@@ -152,7 +164,7 @@ export default function AIAnalysis({ onClose }: AIAnalysisProps) {
             <button
               onClick={() => {
                 setHistory([]);
-                setAnalysis(null);
+                setError(null);
               }}
               className="text-xs text-white/30 hover:text-white/60 mt-2 transition-colors"
             >

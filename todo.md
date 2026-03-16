@@ -280,3 +280,9 @@
 - [x] Verify leaderboard accuracy: scoring engine, point totals, tiebreakers — correctPicks tiebreaker added
 - [x] Audit ESPN sync: confirm team name matching is robust (no missed scores)
 - [x] Run full test suite and fix any failures (35/35 passing, 0 TS errors)
+
+## Urgent Fixes (March 16)
+- [x] Fix AI helper/analyzer (Ask Buddy / AI chat not working) — changed to publicProcedure, rewrote UI with error display and conversation history
+- [x] Add prize/stakes section to Home page (1st/2nd/3rd place podium + 4 achievement badges)
+- [x] Fix blank bracket print — ?blank=1 URL param hides all picks; Print Blank button added to print page
+- [x] Verify user bracket print works correctly (picks highlighted in yellow, champion shown, footer URL correct)

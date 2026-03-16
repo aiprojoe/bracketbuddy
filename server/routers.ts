@@ -441,7 +441,7 @@ export const appRouter = router({
 
   // ─── AI Analysis ─────────────────────────────────────────────────────────────
   ai: router({
-    analyzeBracket: protectedProcedure
+    analyzeBracket: publicProcedure
       .input(
         z.object({
           region: z.string().optional(),

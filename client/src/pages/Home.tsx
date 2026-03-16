@@ -329,6 +329,52 @@ export default function Home() {
         </div>
       </section>
 
+      {/* What's at Stake Section */}
+      <section className="max-w-7xl mx-auto px-4 py-20">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[oklch(0.78_0.18_80/0.15)] border border-[oklch(0.78_0.18_80/0.3)] text-[oklch(0.78_0.18_80)] text-sm font-semibold mb-4">
+            🏆 What's at Stake
+          </div>
+          <h2 className="font-display text-5xl md:text-6xl text-white mb-4">COMPETE FOR GLORY</h2>
+          <p className="text-white/50 text-lg max-w-2xl mx-auto">Every pick matters. Every upset counts. Here's what you're playing for.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="relative rounded-2xl overflow-hidden border border-[oklch(0.78_0.18_80/0.4)] bg-gradient-to-b from-[oklch(0.78_0.18_80/0.12)] to-[oklch(0.78_0.18_80/0.04)] p-6 text-center">
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[oklch(0.78_0.18_80)] to-transparent" />
+            <div className="text-5xl mb-3">🥇</div>
+            <div className="font-display text-2xl text-[oklch(0.78_0.18_80)] mb-1">1ST PLACE</div>
+            <div className="text-3xl font-bold text-white mb-2">Champion</div>
+            <p className="text-white/50 text-sm">Crowned the 2026 March Madness Oracle. Your name at the top of the leaderboard for all to see — forever.</p>
+          </div>
+          <div className="relative rounded-2xl overflow-hidden border border-white/15 bg-gradient-to-b from-white/5 to-transparent p-6 text-center">
+            <div className="text-5xl mb-3">🥈</div>
+            <div className="font-display text-2xl text-white/70 mb-1">2ND PLACE</div>
+            <div className="text-3xl font-bold text-white mb-2">Runner-Up</div>
+            <p className="text-white/50 text-sm">Permanent badge on your profile. Proof you know your hoops better than almost everyone.</p>
+          </div>
+          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-b from-white/3 to-transparent p-6 text-center">
+            <div className="text-5xl mb-3">🥉</div>
+            <div className="font-display text-2xl text-white/50 mb-1">3RD PLACE</div>
+            <div className="text-3xl font-bold text-white mb-2">Podium Finish</div>
+            <p className="text-white/50 text-sm">Top-3 achievement badge and leaderboard recognition for the entire tournament.</p>
+          </div>
+        </div>
+        <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { icon: "💥", title: "Upset King", desc: "Most upsets correctly picked" },
+            { icon: "🪄", title: "Cinderella Story", desc: "Best deep-run underdog pick" },
+            { icon: "🎯", title: "Perfect Round", desc: "All Sweet 16 picks correct" },
+            { icon: "👑", title: "Oracle", desc: "Champion pick correct" },
+          ].map((a) => (
+            <div key={a.title} className="rounded-xl border border-white/10 bg-white/3 p-4 text-center">
+              <div className="text-3xl mb-2">{a.icon}</div>
+              <div className="text-sm font-bold text-white">{a.title}</div>
+              <div className="text-xs text-white/40 mt-1">{a.desc}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="bg-gradient-to-r from-[oklch(0.65_0.22_35/0.15)] to-[oklch(0.55_0.2_250/0.1)] border-y border-white/10 py-20">
         <div className="max-w-3xl mx-auto px-4 text-center">

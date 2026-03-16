@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { SEED_PAIRS_R64, type Region, type Round } from "../../../shared/bracketData";
+import { useSearch } from "wouter";
 
 const REGIONS: Region[] = ["East", "West", "South", "Midwest"];
 const ROUNDS: Round[] = ["round64", "round32", "sweet16", "elite8"];
@@ -104,14 +105,18 @@ function PrintMatchup({
 }
 
 export default function PrintBracket() {
+  const search = useSearch();
+  const isBlank = new URLSearchParams(search).get("blank") === "1";
   const { data: teamsData } = trpc.teams.getAll.useQuery();
   const { data: bracketData } = trpc.bracket.getMine.useQuery(undefined, { retry: false });
 
   const teams = teamsData ?? [];
   const picks: PicksMap = {};
-  bracketData?.picks.forEach((p) => {
-    picks[p.matchupId] = p.pickedTeamId;
-  });
+  if (!isBlank) {
+    bracketData?.picks.forEach((p) => {
+      picks[p.matchupId] = p.pickedTeamId;
+    });
+  }
 
   const getTeamBySeed = (region: Region, seed: number) =>
     teams.find((t) => t.region === region && t.seed === seed);
@@ -174,7 +179,7 @@ export default function PrintBracket() {
     }
   }, [teamsData]);
 
-  const userName = bracketData?.bracket ? "My Bracket" : "BracketBuddy 2026";
+  const userName = isBlank ? "Blank Bracket — Fill It In!" : (bracketData?.bracket ? "My Bracket" : "BracketBuddy 2026");
 
   return (
     <div
@@ -381,6 +386,14 @@ export default function PrintBracket() {
         >
           🖨️ Print
         </button>
+        {!isBlank && (
+          <button
+            onClick={() => window.open("/bracket/print?blank=1", "_blank")}
+            style={{ padding: "8px 16px", backgroundColor: "#555", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px" }}
+          >
+            📄 Print Blank
+          </button>
+        )}
         <button
           onClick={() => window.history.back()}
           style={{ padding: "8px 16px", backgroundColor: "#333", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px" }}
