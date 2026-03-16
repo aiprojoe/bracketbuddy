@@ -217,3 +217,11 @@
 - [x] Update copy in First Four tab explanation (Picks lock March 20)
 - [x] Update Admin panel ESPN hint to show First Four: March 18-19, Round of 64: March 20-21
 - [x] No LOCK_DATE in shared/bracketData.ts (only in Home.tsx — already updated)
+
+## Bracket Visual Clarity
+- [x] Add SVG connector lines from each matchup pair to the next round slot (BracketConnectors component)
+- [x] Add clear visual card border around each R64 matchup pair (rounded-lg border bg-card)
+- [x] Increase spacing between matchups in R64 from 8px to 12px
+- [x] Add connector from Elite Eight into Region Winner slot
+- [x] Add React.Fragment key to fix React warning
+- [x] 0 TypeScript errors, Vite HMR clean

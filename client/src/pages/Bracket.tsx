@@ -1,3 +1,4 @@
+import React from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
@@ -87,6 +88,53 @@ function TeamSlot({
   );
 }
 
+// SVG connector lines between a round column and the next
+// Each matchup pair feeds into one slot in the next round.
+// MATCHUP_H = height of one Matchup card (2 slots + vs divider + padding)
+const MATCHUP_H = 96; // px — must match the card height in Matchup below
+const CONNECTOR_W = 20; // px wide SVG strip between columns
+
+function BracketConnectors({ count, gap, paddingTop }: { count: number; gap: number; paddingTop: number }) {
+  // 'count' = number of matchups in the LEFT round (e.g. 8 for R64)
+  // Each pair of left matchups connects to one right matchup
+  const pairs = Math.ceil(count / 2);
+  const totalH = paddingTop + pairs * (MATCHUP_H * 2 + gap) - gap;
+  const lines: React.ReactNode[] = [];
+
+  for (let i = 0; i < pairs; i++) {
+    // y-center of top matchup in this pair
+    const topMatchupCenter = paddingTop + i * (MATCHUP_H * 2 + gap) + MATCHUP_H / 2;
+    // y-center of bottom matchup in this pair
+    const botMatchupCenter = topMatchupCenter + MATCHUP_H + gap;
+    // y-midpoint where the connector meets the right slot
+    const midY = (topMatchupCenter + botMatchupCenter) / 2;
+
+    lines.push(
+      <g key={i} stroke="rgba(255,255,255,0.12)" strokeWidth="1" fill="none">
+        {/* horizontal from top matchup */}
+        <line x1="0" y1={topMatchupCenter} x2={CONNECTOR_W} y2={topMatchupCenter} />
+        {/* horizontal from bottom matchup */}
+        <line x1="0" y1={botMatchupCenter} x2={CONNECTOR_W} y2={botMatchupCenter} />
+        {/* vertical joining them */}
+        <line x1={CONNECTOR_W} y1={topMatchupCenter} x2={CONNECTOR_W} y2={botMatchupCenter} />
+        {/* short horizontal to next round */}
+        <line x1={CONNECTOR_W} y1={midY} x2={CONNECTOR_W * 2} y2={midY} />
+      </g>
+    );
+  }
+
+  return (
+    <svg
+      width={CONNECTOR_W * 2}
+      height={totalH}
+      className="flex-shrink-0 self-start"
+      style={{ marginTop: 28 /* header offset */ }}
+    >
+      {lines}
+    </svg>
+  );
+}
+
 function Matchup({
   team1,
   team2,
@@ -95,6 +143,7 @@ function Matchup({
   onPick,
   matchupId,
   hintText,
+  showCard,
 }: {
   team1?: TeamData;
   team2?: TeamData;
@@ -103,6 +152,7 @@ function Matchup({
   onPick: (teamId: number, team1Seed: number, team2Seed: number | null) => void;
   matchupId: string;
   hintText?: string;
+  showCard?: boolean;
 }) {
   // A matchup is fully TBD (no teams at all) — show locked placeholder
   const bothTBD = !team1 && !team2;
@@ -111,8 +161,8 @@ function Matchup({
   const upsetChance = team1 && team2 ? getUpsetProbability(Math.min(team1.seed, team2.seed), Math.max(team1.seed, team2.seed)) : 0;
   const showUpsetBadge = upsetChance >= 25;
 
-  return (
-    <div className={`flex flex-col gap-0.5 min-w-[130px] max-w-[150px] ${bothTBD ? "opacity-50" : ""}`}>
+  const inner = (
+    <div className={`flex flex-col gap-0.5 min-w-[140px] max-w-[160px] ${bothTBD ? "opacity-50" : ""}`}>
       {team1 ? (
         <TeamInfoTooltip team={team1} opponent={team2}>
           <TeamSlot
@@ -131,7 +181,7 @@ function Matchup({
           hintText={hintText}
         />
       )}
-      <div className="text-center text-[10px] text-white/20 leading-none flex items-center justify-center gap-1">
+      <div className="text-center text-[10px] text-white/20 leading-none flex items-center justify-center gap-1 py-0.5">
         <span>vs</span>
         {showUpsetBadge && (
           <span className="text-[8px] text-[oklch(0.55_0.2_250)] font-bold" title={`${upsetChance}% upset chance`}>
@@ -159,6 +209,15 @@ function Matchup({
       )}
     </div>
   );
+
+  if (showCard) {
+    return (
+      <div className="rounded-lg border border-white/10 bg-[oklch(0.13_0.012_260)] p-1.5 shadow-sm">
+        {inner}
+      </div>
+    );
+  }
+  return inner;
 }
 
 export default function Bracket() {
@@ -662,62 +721,89 @@ export default function Bracket() {
             </div>
 
             {/* Bracket Grid */}
-            <div className="flex gap-6 min-w-max">
-              {roundMatchups.map(({ round, matchups }) => {
+            <div className="flex items-start min-w-max">
+              {roundMatchups.map(({ round, matchups }, roundIdx) => {
                 const prevRoundLabel = round === "round32" ? "Round of 64" : round === "sweet16" ? "Round of 32" : round === "elite8" ? "Sweet 16" : undefined;
                 const allTBD = matchups.every((m) => !m.team1 && !m.team2);
                 const hintText = prevRoundLabel ? `Pick ${prevRoundLabel} winners to unlock` : undefined;
+                const isR64 = round === "round64";
+
+                // Gap and paddingTop values (in px numbers for connector math)
+                const gapPx = isR64 ? 12 : round === "round32" ? 108 : round === "sweet16" ? 228 : 468;
+                const padTopPx = isR64 ? 0 : round === "round32" ? 54 : round === "sweet16" ? 114 : 234;
+
+                // Show connectors between this round and the next
+                const prevMatchups = roundIdx > 0 ? roundMatchups[roundIdx - 1].matchups : [];
+                const prevRound = roundIdx > 0 ? roundMatchups[roundIdx - 1].round : null;
+                const prevGapPx = prevRound === "round64" ? 12 : prevRound === "round32" ? 108 : prevRound === "sweet16" ? 228 : 468;
+                const prevPadTopPx = prevRound === "round64" ? 0 : prevRound === "round32" ? 54 : prevRound === "sweet16" ? 114 : 234;
+
                 return (
-                  <div key={round} className="flex flex-col gap-2">
-                    <div className="text-center mb-2 px-2">
-                      <div className="text-xs font-condensed uppercase tracking-wider text-white/40">
-                        {ROUND_LABELS[round]}
-                      </div>
-                      {allTBD && hintText && (
-                        <div className="text-[9px] text-[oklch(0.65_0.22_35/0.7)] mt-0.5 font-medium">
-                          ← {prevRoundLabel} first
+                  <React.Fragment key={round}>
+                    {/* SVG connector lines from previous round into this one */}
+                    {roundIdx > 0 && (
+                      <BracketConnectors
+                        count={prevMatchups.length}
+                        gap={prevGapPx}
+                        paddingTop={prevPadTopPx}
+                      />
+                    )}
+
+                    <div key={round} className="flex flex-col">
+                      <div className="text-center mb-3 px-2">
+                        <div className="text-xs font-condensed uppercase tracking-wider text-white/40">
+                          {ROUND_LABELS[round]}
                         </div>
-                      )}
+                        {allTBD && hintText && (
+                          <div className="text-[9px] text-[oklch(0.65_0.22_35/0.7)] mt-0.5 font-medium">
+                            ← {prevRoundLabel} first
+                          </div>
+                        )}
+                      </div>
+                      <div
+                        className="flex flex-col"
+                        style={{
+                          gap: `${gapPx}px`,
+                          paddingTop: `${padTopPx}px`,
+                        }}
+                      >
+                        {matchups.map((m) => (
+                          <Matchup
+                            key={m.id}
+                            team1={m.team1}
+                            team2={m.team2}
+                            pickedTeamId={picks[m.id]}
+                            showCard={isR64}
+                            onPick={(teamId, t1Seed, t2Seed) => {
+                              const t1 = m.team1;
+                              const t2 = m.team2;
+                              // Allow picking even when opponent is TBD
+                              // At least one team must be present (the one being picked)
+                              if (!t1 && !t2) return;
+                              const pickedTeam = t1?.id === teamId ? t1 : t2;
+                              if (!pickedTeam) return;
+                              handlePick(
+                                m.id,
+                                teamId,
+                                round,
+                                t1?.id ?? teamId,
+                                t2?.id ?? null,
+                                t1Seed,
+                                t2Seed
+                              );
+                            }}
+                            matchupId={m.id}
+                            hintText={hintText}
+                          />
+                        ))}
+                      </div>
                     </div>
-                    <div
-                      className="flex flex-col"
-                      style={{
-                        gap: round === "round64" ? "8px" : round === "round32" ? "52px" : round === "sweet16" ? "132px" : "292px",
-                        paddingTop: round === "round64" ? 0 : round === "round32" ? "28px" : round === "sweet16" ? "68px" : "148px",
-                      }}
-                    >
-                      {matchups.map((m) => (
-                        <Matchup
-                          key={m.id}
-                          team1={m.team1}
-                          team2={m.team2}
-                          pickedTeamId={picks[m.id]}
-                          onPick={(teamId, t1Seed, t2Seed) => {
-                            const t1 = m.team1;
-                            const t2 = m.team2;
-                            // Allow picking even when opponent is TBD
-                            // At least one team must be present (the one being picked)
-                            if (!t1 && !t2) return;
-                            const pickedTeam = t1?.id === teamId ? t1 : t2;
-                            if (!pickedTeam) return;
-                            handlePick(
-                              m.id,
-                              teamId,
-                              round,
-                              t1?.id ?? teamId,
-                              t2?.id ?? null,
-                              t1Seed,
-                              t2Seed
-                            );
-                          }}
-                          matchupId={m.id}
-                          hintText={hintText}
-                        />
-                      ))}
-                    </div>
-                  </div>
+                  </React.Fragment>
                 );
               })}
+
+              {/* Connector from Elite Eight into Region Winner */}
+              <BracketConnectors count={1} gap={0} paddingTop={234} />
 
               {/* Region Winner */}
               <div className="flex flex-col gap-2">
