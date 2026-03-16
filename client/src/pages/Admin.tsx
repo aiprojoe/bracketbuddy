@@ -51,17 +51,77 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 // Template for pasting in the real bracket — 68 teams in JSON format
+// For First Four teams: add "isFirstFour": true and use the same seed as their play-in partner
+// Example: two teams both with seed 11 in South, both with isFirstFour: true
 const TEAM_TEMPLATE = `[
   { "seed": 1, "region": "East", "name": "Duke Blue Devils", "shortName": "Duke", "conference": "ACC" },
   { "seed": 2, "region": "East", "name": "Alabama Crimson Tide", "shortName": "Alabama", "conference": "SEC" },
   { "seed": 3, "region": "East", "name": "Wisconsin Badgers", "shortName": "Wisconsin", "conference": "Big Ten" },
   { "seed": 4, "region": "East", "name": "Maryland Terrapins", "shortName": "Maryland", "conference": "Big Ten" },
+  { "seed": 5, "region": "East", "name": "Team E5", "shortName": "E5", "conference": "" },
+  { "seed": 6, "region": "East", "name": "Team E6", "shortName": "E6", "conference": "" },
+  { "seed": 7, "region": "East", "name": "Team E7", "shortName": "E7", "conference": "" },
+  { "seed": 8, "region": "East", "name": "Team E8", "shortName": "E8", "conference": "" },
+  { "seed": 9, "region": "East", "name": "Team E9", "shortName": "E9", "conference": "" },
+  { "seed": 10, "region": "East", "name": "Team E10", "shortName": "E10", "conference": "" },
+  { "seed": 11, "region": "East", "name": "Team E11", "shortName": "E11", "conference": "" },
+  { "seed": 12, "region": "East", "name": "Team E12", "shortName": "E12", "conference": "" },
+  { "seed": 13, "region": "East", "name": "Team E13", "shortName": "E13", "conference": "" },
+  { "seed": 14, "region": "East", "name": "Team E14", "shortName": "E14", "conference": "" },
+  { "seed": 15, "region": "East", "name": "Team E15", "shortName": "E15", "conference": "" },
+  { "seed": 16, "region": "East", "name": "Team E16a", "shortName": "E16a", "conference": "", "isFirstFour": true },
+  { "seed": 16, "region": "East", "name": "Team E16b", "shortName": "E16b", "conference": "", "isFirstFour": true },
   { "seed": 1, "region": "West", "name": "Auburn Tigers", "shortName": "Auburn", "conference": "SEC" },
   { "seed": 2, "region": "West", "name": "Michigan State Spartans", "shortName": "Michigan St", "conference": "Big Ten" },
+  { "seed": 3, "region": "West", "name": "Team W3", "shortName": "W3", "conference": "" },
+  { "seed": 4, "region": "West", "name": "Team W4", "shortName": "W4", "conference": "" },
+  { "seed": 5, "region": "West", "name": "Team W5", "shortName": "W5", "conference": "" },
+  { "seed": 6, "region": "West", "name": "Team W6", "shortName": "W6", "conference": "" },
+  { "seed": 7, "region": "West", "name": "Team W7", "shortName": "W7", "conference": "" },
+  { "seed": 8, "region": "West", "name": "Team W8", "shortName": "W8", "conference": "" },
+  { "seed": 9, "region": "West", "name": "Team W9", "shortName": "W9", "conference": "" },
+  { "seed": 10, "region": "West", "name": "Team W10", "shortName": "W10", "conference": "" },
+  { "seed": 11, "region": "West", "name": "Team W11a", "shortName": "W11a", "conference": "", "isFirstFour": true },
+  { "seed": 11, "region": "West", "name": "Team W11b", "shortName": "W11b", "conference": "", "isFirstFour": true },
+  { "seed": 12, "region": "West", "name": "Team W12", "shortName": "W12", "conference": "" },
+  { "seed": 13, "region": "West", "name": "Team W13", "shortName": "W13", "conference": "" },
+  { "seed": 14, "region": "West", "name": "Team W14", "shortName": "W14", "conference": "" },
+  { "seed": 15, "region": "West", "name": "Team W15", "shortName": "W15", "conference": "" },
+  { "seed": 16, "region": "West", "name": "Team W16", "shortName": "W16", "conference": "" },
   { "seed": 1, "region": "South", "name": "Houston Cougars", "shortName": "Houston", "conference": "Big 12" },
   { "seed": 2, "region": "South", "name": "Tennessee Volunteers", "shortName": "Tennessee", "conference": "SEC" },
+  { "seed": 3, "region": "South", "name": "Team S3", "shortName": "S3", "conference": "" },
+  { "seed": 4, "region": "South", "name": "Team S4", "shortName": "S4", "conference": "" },
+  { "seed": 5, "region": "South", "name": "Team S5", "shortName": "S5", "conference": "" },
+  { "seed": 6, "region": "South", "name": "Team S6", "shortName": "S6", "conference": "" },
+  { "seed": 7, "region": "South", "name": "Team S7", "shortName": "S7", "conference": "" },
+  { "seed": 8, "region": "South", "name": "Team S8", "shortName": "S8", "conference": "" },
+  { "seed": 9, "region": "South", "name": "Team S9", "shortName": "S9", "conference": "" },
+  { "seed": 10, "region": "South", "name": "Team S10", "shortName": "S10", "conference": "" },
+  { "seed": 11, "region": "South", "name": "Team S11", "shortName": "S11", "conference": "" },
+  { "seed": 12, "region": "South", "name": "Team S12", "shortName": "S12", "conference": "" },
+  { "seed": 13, "region": "South", "name": "Team S13", "shortName": "S13", "conference": "" },
+  { "seed": 14, "region": "South", "name": "Team S14", "shortName": "S14", "conference": "" },
+  { "seed": 15, "region": "South", "name": "Team S15", "shortName": "S15", "conference": "" },
+  { "seed": 16, "region": "South", "name": "Team S16a", "shortName": "S16a", "conference": "", "isFirstFour": true },
+  { "seed": 16, "region": "South", "name": "Team S16b", "shortName": "S16b", "conference": "", "isFirstFour": true },
   { "seed": 1, "region": "Midwest", "name": "Florida Gators", "shortName": "Florida", "conference": "SEC" },
-  { "seed": 2, "region": "Midwest", "name": "St. John's Red Storm", "shortName": "St. John's", "conference": "Big East" }
+  { "seed": 2, "region": "Midwest", "name": "St. John's Red Storm", "shortName": "St. John's", "conference": "Big East" },
+  { "seed": 3, "region": "Midwest", "name": "Team M3", "shortName": "M3", "conference": "" },
+  { "seed": 4, "region": "Midwest", "name": "Team M4", "shortName": "M4", "conference": "" },
+  { "seed": 5, "region": "Midwest", "name": "Team M5", "shortName": "M5", "conference": "" },
+  { "seed": 6, "region": "Midwest", "name": "Team M6", "shortName": "M6", "conference": "" },
+  { "seed": 7, "region": "Midwest", "name": "Team M7", "shortName": "M7", "conference": "" },
+  { "seed": 8, "region": "Midwest", "name": "Team M8", "shortName": "M8", "conference": "" },
+  { "seed": 9, "region": "Midwest", "name": "Team M9", "shortName": "M9", "conference": "" },
+  { "seed": 10, "region": "Midwest", "name": "Team M10", "shortName": "M10", "conference": "" },
+  { "seed": 11, "region": "Midwest", "name": "Team M11a", "shortName": "M11a", "conference": "", "isFirstFour": true },
+  { "seed": 11, "region": "Midwest", "name": "Team M11b", "shortName": "M11b", "conference": "", "isFirstFour": true },
+  { "seed": 12, "region": "Midwest", "name": "Team M12", "shortName": "M12", "conference": "" },
+  { "seed": 13, "region": "Midwest", "name": "Team M13", "shortName": "M13", "conference": "" },
+  { "seed": 14, "region": "Midwest", "name": "Team M14", "shortName": "M14", "conference": "" },
+  { "seed": 15, "region": "Midwest", "name": "Team M15", "shortName": "M15", "conference": "" },
+  { "seed": 16, "region": "Midwest", "name": "Team M16", "shortName": "M16", "conference": "" }
 ]`;
 
 export default function Admin() {
@@ -406,13 +466,21 @@ export default function Admin() {
 
           {showUpdateTeams && (
             <div className="px-5 pb-5 space-y-4 border-t border-orange-500/20 pt-4">
-              <p className="text-white/60 text-sm">
-                Paste a JSON array of team objects. Each team needs: <code className="text-orange-300 bg-white/5 px-1 rounded">seed</code>,{" "}
-                <code className="text-orange-300 bg-white/5 px-1 rounded">region</code> (East/West/South/Midwest),{" "}
-                <code className="text-orange-300 bg-white/5 px-1 rounded">name</code>,{" "}
-                <code className="text-orange-300 bg-white/5 px-1 rounded">shortName</code>.
-                Teams are matched by seed+region so existing user brackets stay intact.
-              </p>
+              {/* Field guide */}
+              <div className="p-3 rounded-lg bg-black/30 border border-orange-500/20 text-xs space-y-2">
+                <div className="font-semibold text-orange-300 text-sm">📋 Field Guide</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-white/60">
+                  <div><code className="text-orange-300">seed</code> — 1–16 (required)</div>
+                  <div><code className="text-orange-300">region</code> — East / West / South / Midwest (required)</div>
+                  <div><code className="text-orange-300">name</code> — Full team name (required)</div>
+                  <div><code className="text-orange-300">shortName</code> — Abbreviated name shown in bracket (required)</div>
+                  <div><code className="text-orange-300">conference</code> — Conference name (optional)</div>
+                  <div><code className="text-orange-300">isFirstFour</code> — <span className="text-yellow-300">true</span> for play-in teams only</div>
+                </div>
+                <div className="pt-1 border-t border-white/10 text-yellow-300/80">
+                  ⚠️ <strong>First Four teams:</strong> Add two teams with the same seed in the same region, both with <code className="text-yellow-300">"isFirstFour": true</code>. The 4 play-in games are: two seed-11 matchups and two seed-16 matchups (one per region for each). Teams are matched by seed+region — existing user picks are <strong>preserved</strong> unless you check "Clear all picks" below.
+                </div>
+              </div>
 
               <textarea
                 value={teamsJson}

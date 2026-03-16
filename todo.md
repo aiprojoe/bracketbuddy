@@ -130,6 +130,11 @@
 - [ ] Trigger ESPN sync for any live game data
 - [ ] Verify bracket page shows real teams
 
+## Final Rollout Features
+- [ ] Add bracket zoom-out toggle button (CSS scale 0.65) for mobile/full-bracket view
+- [ ] Improve Admin Update Teams UX: JSON template, field guide, First Four instructions
+- [ ] Run tests, save final checkpoint, publish
+
 ## Footer Badge — Unrivaled Business Solutions
 - [x] Create PoweredByFooter component (enterprise-grade, minimal, links to unrivaledbusinesssolutions.com)
 - [x] Add "Want an app like this?" CTA in footer

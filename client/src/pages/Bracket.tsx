@@ -7,7 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { useState, useEffect, useCallback } from "react";
 import { useConfetti } from "@/hooks/useConfetti";
 import { toast } from "sonner";
-import { Mic, Zap, Share2, RotateCcw, ChevronRight, Trophy, Sparkles, Swords, Printer, Wand2, Info } from "lucide-react";
+import { Mic, Zap, Share2, RotateCcw, ChevronRight, Trophy, Sparkles, Swords, Printer, Wand2, Info, ZoomIn, ZoomOut } from "lucide-react";
 import ShareBracketModal from "@/components/ShareBracketModal";
 import { type TeamData, SEED_PAIRS_R64, FIRST_FOUR_MATCHUPS, type Region, type Round, getUpsetProbability, getSeedH2H } from "../../../shared/bracketData";
 import VoiceAssistant from "@/components/VoiceAssistant";
@@ -352,7 +352,7 @@ export default function Bracket() {
   const [picks, setPicks] = useState<PicksMap>({});
   const [bracketId, setBracketId] = useState<number | null>(null);
   const [showAI, setShowAI] = useState(false);
-  const [activeTab, setActiveTab] = useState<Region | "FirstFour" | "FirstFourTab">("FirstFourTab");
+  const [activeTab, setActiveTab] = useState<Region | "FirstFour" | "FirstFourTab" | "FinalFour">("FirstFourTab");
   const [totalPicks, setTotalPicks] = useState(0);
   const [showShare, setShowShare] = useState(false);
   const [showVoicePanel, setShowVoicePanel] = useState(false);
@@ -360,6 +360,8 @@ export default function Bracket() {
   // Refs for DOM-measured connector lines
   const bracketContainerRef = React.useRef<HTMLDivElement>(null);
   const matchupRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
+  // Zoom toggle for mobile/full-bracket view
+  const [zoomOut, setZoomOut] = useState(false);
 
   const { data: teamsData } = trpc.teams.getAll.useQuery();
   const { data: bracketData, refetch: refetchBracket } = trpc.bracket.getMine.useQuery(undefined, {
@@ -657,6 +659,17 @@ export default function Bracket() {
               </Button>
 
               <Button
+                onClick={() => setZoomOut((z) => !z)}
+                variant="outline"
+                size="sm"
+                className="border-white/15 text-white/50 hover:text-white hover:border-white/30 bg-transparent hidden sm:flex"
+                title={zoomOut ? "Zoom in" : "Zoom out to see full bracket"}
+              >
+                {zoomOut ? <ZoomIn size={14} className="mr-1" /> : <ZoomOut size={14} className="mr-1" />}
+                {zoomOut ? "Zoom In" : "Zoom Out"}
+              </Button>
+
+              <Button
                 onClick={() => setShowVoicePanel(true)}
                 size="sm"
                 className="bg-[oklch(0.65_0.22_35/0.2)] text-[oklch(0.65_0.22_35)] border border-[oklch(0.65_0.22_35/0.4)] hover:bg-[oklch(0.65_0.22_35/0.3)] font-bold"
@@ -787,6 +800,13 @@ export default function Bracket() {
 
       {/* Bracket Content */}
       <div className="max-w-full mx-auto px-4 py-6 overflow-x-auto">
+        {/* Zoom indicator */}
+        {zoomOut && (
+          <div className="mb-2 flex items-center gap-2 text-xs text-[oklch(0.78_0.18_80/0.7)]">
+            <ZoomOut size={12} />
+            <span>Zoomed out — click teams to pick, or click <strong>Zoom In</strong> to restore full size</span>
+          </div>
+        )}
         {/* Facts Ticker + Score Tracker sidebar */}
         <div className="mb-4 max-w-2xl">
           <FactsTicker />
@@ -865,6 +885,14 @@ export default function Bracket() {
               const regionWinnerId = "RegionWinner-" + activeRegion;
 
               return (
+                <div
+                  style={zoomOut ? {
+                    transform: "scale(0.65)",
+                    transformOrigin: "top left",
+                    // Compensate for scale so the container doesn't leave a gap
+                    marginBottom: "-35%",
+                  } : undefined}
+                >
                 <div ref={bracketContainerRef} className="relative flex items-start min-w-max">
                   {/* DOM-measured SVG overlay for connector lines */}
                   <BracketOverlaySVG
@@ -980,13 +1008,14 @@ export default function Bracket() {
                     </div>
                   </div>
                 </div>
+                </div>
               );
             })()}
           </div>
         )}
 
         {/* Final Four & Championship — shown when Final Four tab is active */}
-        {activeTab === "FirstFour" && (
+        {activeTab === "FinalFour" && (
         <div className="mt-10">
           <div className="flex items-center gap-3 mb-6">
             <Trophy size={20} className="text-[oklch(0.78_0.18_80)]" />
