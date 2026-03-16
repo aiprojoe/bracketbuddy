@@ -294,3 +294,8 @@
 - [x] Fix analyzeBracket: add teamSummary variable (all 68 teams) + update system prompt
 - [x] Fix response_format `as any` cast in parseVoicePick
 - [x] Fix silent DB failure: getDb() now throws loudly instead of returning null
+
+## Improvements (March 16 — Batch 3)
+- [x] VoiceAssistant.tsx — sign-in gate for logged-out users with Google login CTA
+- [x] server/db.ts — add maxPossiblePoints to getLeaderboard select
+- [x] Leaderboard.tsx — show max possible points below score

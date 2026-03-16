@@ -160,6 +160,11 @@ export default function Leaderboard() {
                         {(entry.totalPoints ?? 0).toLocaleString()}
                       </div>
                       <div className="text-xs text-white/40">points</div>
+                      {(entry.maxPossiblePoints ?? 0) > 0 && (
+                        <div className="text-xs text-white/25 mt-0.5" title="Max points still possible if all remaining picks are correct">
+                          ↑{(entry.maxPossiblePoints ?? 0).toLocaleString()} max
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

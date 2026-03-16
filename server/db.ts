@@ -321,6 +321,7 @@ export async function getLeaderboard(limit = 50) {
       totalPoints: users.totalPoints,
       bracketCount: users.bracketCount,
       correctPicks: brackets.correctPicks,
+      maxPossiblePoints: brackets.maxPossiblePoints,
     })
     .from(users)
     .leftJoin(brackets, and(eq(brackets.userId, users.id), eq(brackets.year, 2026)))

@@ -12,7 +12,9 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
-import { Mic, MicOff, X, Loader2, AlertCircle, MessageSquare, CheckCircle2 } from "lucide-react";
+import { Mic, MicOff, X, Loader2, AlertCircle, MessageSquare, CheckCircle2, LogIn } from "lucide-react";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -84,6 +86,7 @@ interface VoiceAssistantProps {
 }
 
 export default function VoiceAssistant({ onPickByVoice, forceOpen, onForceOpenHandled }: VoiceAssistantProps) {
+  const { isAuthenticated } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<"voice" | "text">("voice");
   const [state, setState] = useState<AssistantState>("idle");
@@ -320,6 +323,22 @@ export default function VoiceAssistant({ onPickByVoice, forceOpen, onForceOpenHa
               </button>
             </div>
 
+            {/* Auth gate — show sign-in CTA for logged-out users */}
+            {!isAuthenticated ? (
+              <div className="p-6 flex flex-col items-center gap-4 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-[oklch(0.65_0.22_35/0.15)] border border-[oklch(0.65_0.22_35/0.3)] flex items-center justify-center text-2xl">🏀</div>
+                <div>
+                  <p className="font-bold text-white text-base mb-1">Sign in to use Buddy AI</p>
+                  <p className="text-white/50 text-sm leading-snug">Get AI-powered upset picks, voice bracket filling, and personalized predictions — all free.</p>
+                </div>
+                <Button onClick={() => (window.location.href = getLoginUrl())} className="w-full bg-[oklch(0.65_0.22_35)] hover:bg-[oklch(0.72_0.24_40)] text-white font-bold flex items-center justify-center gap-2">
+                  <LogIn size={16} />
+                  Sign in with Google — it's free
+                </Button>
+                <p className="text-white/20 text-xs">No credit card · No subscription · Pure bragging rights</p>
+              </div>
+            ) : (
+              <>
             {/* Mode Tabs */}
             <div className="flex border-b border-white/8">
               <button
@@ -517,9 +536,11 @@ export default function VoiceAssistant({ onPickByVoice, forceOpen, onForceOpenHa
             {/* Footer */}
             <div className="px-5 py-2.5 border-t border-white/5">
               <span className="text-xs text-white/20">
-                🆓 100% free · Voice picks update your bracket instantly
+                {isAuthenticated ? "🆓 100% free · Voice picks update your bracket instantly" : "🔒 Sign in to unlock AI picks"}
               </span>
             </div>
+            </>
+            )}
           </div>
         </div>
       )}
