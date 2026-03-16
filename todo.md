@@ -179,3 +179,12 @@
 - [x] Add ScoreTracker component: correct/incorrect picks with round breakdown (collapses when no games played)
 - [x] Add "Reset picks" button (bottom-left, only when picks exist)
 - [x] 0 TypeScript errors, 28/28 tests passing
+
+## Accuracy & Reliability Audit
+- [x] VOICE: No VAPI needed — using browser Web Speech API (free, zero cost, zero setup). Works in Chrome/Edge/Android. Safari/Firefox users auto-fall back to text chat.
+- [x] PICK PERSISTENCE: Verified — updateTeams uses clearPicks=false by default; team IDs are stable across updates so all picks survive.
+- [x] LEADERBOARD: Verified — points sourced from users.totalPoints which is incremented atomically by the scoring engine. No double-counting possible.
+- [x] SCORING ENGINE: Verified — scorePicks() only fires once per game (isScored guard prevents re-scoring). Points use GREATEST(0,...) to prevent negatives.
+- [x] BUG FIXED: upsertPick() was not reversing points when a user changed a pick that had already been scored. Now: if pick changes after scoring, old points are reversed from bracket + user totals, and isCorrect/pointsEarned/actualWinnerId are reset so sync engine re-scores on next run.
+- [x] MATCHUP ID MATCHING: Verified — buildMatchupId() in espnSync.ts uses same format as Bracket.tsx (e.g. "East-round64-0"). Round of 64 uses seed-pair index; later rounds use minSeed v maxSeed key.
+- [x] 0 TypeScript errors, 28/28 tests passing after fix

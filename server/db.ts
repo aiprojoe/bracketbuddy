@@ -273,10 +273,29 @@ export async function upsertPick(data: {
     .limit(1);
 
   if (existing.length > 0) {
+    const prev = existing[0]!;
+    // If the pick is being changed AND it was already scored as correct,
+    // we must reverse the points from the bracket and user totals first.
+    if (prev.pickedTeamId !== data.pickedTeamId && prev.isCorrect === true && prev.pointsEarned) {
+      await db.execute(
+        `UPDATE brackets SET totalPoints = GREATEST(0, totalPoints - ${prev.pointsEarned}), correctPicks = GREATEST(0, correctPicks - 1) WHERE id = ${data.bracketId}`
+      );
+      await db.execute(
+        `UPDATE users SET totalPoints = GREATEST(0, totalPoints - ${prev.pointsEarned}) WHERE id = ${data.userId}`
+      );
+    }
+    // When a pick changes, reset scoring fields so the sync job re-scores it
+    const isChangingPick = prev.pickedTeamId !== data.pickedTeamId;
     await db
       .update(picks)
-      .set({ pickedTeamId: data.pickedTeamId, isUpset: data.isUpset, updatedAt: new Date() })
-      .where(eq(picks.id, existing[0]!.id));
+      .set({
+        pickedTeamId: data.pickedTeamId,
+        isUpset: data.isUpset,
+        updatedAt: new Date(),
+        // Reset scoring if pick changed so sync engine re-evaluates
+        ...(isChangingPick ? { isCorrect: null, pointsEarned: 0, actualWinnerId: null } : {}),
+      })
+      .where(eq(picks.id, prev.id));
   } else {
     await db.insert(picks).values(data);
   }
