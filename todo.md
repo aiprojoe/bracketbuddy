@@ -265,3 +265,9 @@
 - [x] Add "Send Lock Reminder" button in Admin panel (emails all users before March 20)
 - [x] Add welcome email sent on first sign-in
 - [x] Run all tests, 0 TS errors, save checkpoint, publish
+
+## Bracket Accuracy Fix
+- [x] Research official 2026 NCAA Tournament 68-team bracket
+- [x] Query DB for current teams and identify all duplicates/errors (NC State duplicate found)
+- [x] Push corrected 68-team JSON to database (14 corrections made)
+- [x] Verify no duplicates remain (57/57 matchup checks passed)

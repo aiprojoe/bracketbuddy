@@ -1,0 +1,486 @@
+{
+  "query": "SELECT seed, region, name, shortName, isFirstFour FROM teams ORDER BY region, seed, name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute SELECT seed, region, name, shortName, isFirstFour FROM teams ORDER BY region, seed, name;",
+  "rows": [
+    {
+      "seed": "1",
+      "region": "East",
+      "name": "Duke Blue Devils",
+      "shortName": "Duke",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "2",
+      "region": "East",
+      "name": "Iowa State Cyclones",
+      "shortName": "Iowa State",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "3",
+      "region": "East",
+      "name": "Michigan State Spartans",
+      "shortName": "Michigan St",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "4",
+      "region": "East",
+      "name": "Nebraska Cornhuskers",
+      "shortName": "Nebraska",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "5",
+      "region": "East",
+      "name": "Kansas Jayhawks",
+      "shortName": "Kansas",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "6",
+      "region": "East",
+      "name": "North Carolina Tar Heels",
+      "shortName": "UNC",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "7",
+      "region": "East",
+      "name": "UCLA Bruins",
+      "shortName": "UCLA",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "8",
+      "region": "East",
+      "name": "TCU Horned Frogs",
+      "shortName": "TCU",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "9",
+      "region": "East",
+      "name": "Ohio State Buckeyes",
+      "shortName": "Ohio State",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "10",
+      "region": "East",
+      "name": "Missouri Tigers",
+      "shortName": "Missouri",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "11",
+      "region": "East",
+      "name": "Miami (OH) Red Hawks",
+      "shortName": "Miami OH",
+      "isFirstFour": "1"
+    },
+    {
+      "seed": "11",
+      "region": "East",
+      "name": "Texas Longhorns",
+      "shortName": "Texas",
+      "isFirstFour": "1"
+    },
+    {
+      "seed": "12",
+      "region": "East",
+      "name": "McNeese Cowboys",
+      "shortName": "McNeese",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "13",
+      "region": "East",
+      "name": "Hofstra Pride",
+      "shortName": "Hofstra",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "14",
+      "region": "East",
+      "name": "Wright State Raiders",
+      "shortName": "Wright State",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "15",
+      "region": "East",
+      "name": "UMBC Retrievers",
+      "shortName": "UMBC",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "16",
+      "region": "East",
+      "name": "Long Island Sharks",
+      "shortName": "Long Island",
+      "isFirstFour": "1"
+    },
+    {
+      "seed": "16",
+      "region": "East",
+      "name": "Prairie View A&M Panthers",
+      "shortName": "Prairie View",
+      "isFirstFour": "1"
+    },
+    {
+      "seed": "1",
+      "region": "West",
+      "name": "Arizona Wildcats",
+      "shortName": "Arizona",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "2",
+      "region": "West",
+      "name": "Purdue Boilermakers",
+      "shortName": "Purdue",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "3",
+      "region": "West",
+      "name": "Gonzaga Bulldogs",
+      "shortName": "Gonzaga",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "4",
+      "region": "West",
+      "name": "Alabama Crimson Tide",
+      "shortName": "Alabama",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "5",
+      "region": "West",
+      "name": "Wisconsin Badgers",
+      "shortName": "Wisconsin",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "6",
+      "region": "West",
+      "name": "Tennessee Volunteers",
+      "shortName": "Tennessee",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "7",
+      "region": "West",
+      "name": "Clemson Tigers",
+      "shortName": "Clemson",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "8",
+      "region": "West",
+      "name": "Saint Mary's Gaels",
+      "shortName": "Saint Mary's",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "9",
+      "region": "West",
+      "name": "Villanova Wildcats",
+      "shortName": "Villanova",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "10",
+      "region": "West",
+      "name": "Texas A&M Aggies",
+      "shortName": "Texas A&M",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "11",
+      "region": "West",
+      "name": "Santa Clara Broncos",
+      "shortName": "Santa Clara",
+      "isFirstFour": "1"
+    },
+    {
+      "seed": "11",
+      "region": "West",
+      "name": "SMU Mustangs",
+      "shortName": "SMU",
+      "isFirstFour": "1"
+    },
+    {
+      "seed": "12",
+      "region": "West",
+      "name": "Northern Iowa Panthers",
+      "shortName": "Northern Iowa",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "13",
+      "region": "West",
+      "name": "Hawaii Rainbow Warriors",
+      "shortName": "Hawaii",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "14",
+      "region": "West",
+      "name": "Penn Quakers",
+      "shortName": "Penn",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "15",
+      "region": "West",
+      "name": "Furman Paladins",
+      "shortName": "Furman",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "16",
+      "region": "West",
+      "name": "Howard Bison",
+      "shortName": "Howard",
+      "isFirstFour": "1"
+    },
+    {
+      "seed": "16",
+      "region": "West",
+      "name": "Lehigh Mountain Hawks",
+      "shortName": "Lehigh",
+      "isFirstFour": "1"
+    },
+    {
+      "seed": "1",
+      "region": "South",
+      "name": "Florida Gators",
+      "shortName": "Florida",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "2",
+      "region": "South",
+      "name": "Houston Cougars",
+      "shortName": "Houston",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "3",
+      "region": "South",
+      "name": "Illinois Fighting Illini",
+      "shortName": "Illinois",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "4",
+      "region": "South",
+      "name": "St. John's Red Storm",
+      "shortName": "St. John's",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "5",
+      "region": "South",
+      "name": "Arkansas Razorbacks",
+      "shortName": "Arkansas",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "6",
+      "region": "South",
+      "name": "BYU Cougars",
+      "shortName": "BYU",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "7",
+      "region": "South",
+      "name": "Kentucky Wildcats",
+      "shortName": "Kentucky",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "8",
+      "region": "South",
+      "name": "Utah State Aggies",
+      "shortName": "Utah State",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "9",
+      "region": "South",
+      "name": "UCF Knights",
+      "shortName": "UCF",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "10",
+      "region": "South",
+      "name": "NC State Wolfpack",
+      "shortName": "NC State",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "11",
+      "region": "South",
+      "name": "South Florida Bulls",
+      "shortName": "USF",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "12",
+      "region": "South",
+      "name": "High Point Panthers",
+      "shortName": "High Point",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "13",
+      "region": "South",
+      "name": "North Dakota State Bison",
+      "shortName": "NDSU",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "14",
+      "region": "South",
+      "name": "Troy Trojans",
+      "shortName": "Troy",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "15",
+      "region": "South",
+      "name": "Kennesaw State Owls",
+      "shortName": "Kennesaw St",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "16",
+      "region": "South",
+      "name": "Queens Royals",
+      "shortName": "Queens",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "1",
+      "region": "Midwest",
+      "name": "Michigan Wolverines",
+      "shortName": "Michigan",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "2",
+      "region": "Midwest",
+      "name": "UConn Huskies",
+      "shortName": "UConn",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "3",
+      "region": "Midwest",
+      "name": "Vanderbilt Commodores",
+      "shortName": "Vanderbilt",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "4",
+      "region": "Midwest",
+      "name": "Virginia Cavaliers",
+      "shortName": "Virginia",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "5",
+      "region": "Midwest",
+      "name": "Texas Tech Red Raiders",
+      "shortName": "Texas Tech",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "6",
+      "region": "Midwest",
+      "name": "Louisville Cardinals",
+      "shortName": "Louisville",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "7",
+      "region": "Midwest",
+      "name": "Miami Hurricanes",
+      "shortName": "Miami",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "8",
+      "region": "Midwest",
+      "name": "Georgia Bulldogs",
+      "shortName": "Georgia",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "9",
+      "region": "Midwest",
+      "name": "Saint Louis Billikens",
+      "shortName": "Saint Louis",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "10",
+      "region": "Midwest",
+      "name": "Iowa Hawkeyes",
+      "shortName": "Iowa",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "11",
+      "region": "Midwest",
+      "name": "NC State Wolfpack",
+      "shortName": "NC State",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "12",
+      "region": "Midwest",
+      "name": "Akron Zips",
+      "shortName": "Akron",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "13",
+      "region": "Midwest",
+      "name": "California Baptist Lancers",
+      "shortName": "Cal Baptist",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "14",
+      "region": "Midwest",
+      "name": "Tennessee State Tigers",
+      "shortName": "Tennessee St",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "15",
+      "region": "Midwest",
+      "name": "Idaho Vandals",
+      "shortName": "Idaho",
+      "isFirstFour": "0"
+    },
+    {
+      "seed": "16",
+      "region": "Midwest",
+      "name": "Siena Saints",
+      "shortName": "Siena",
+      "isFirstFour": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "seed\tregion\tname\tshortName\tisFirstFour\n1\tEast\tDuke Blue Devils\tDuke\t0\n2\tEast\tIowa State Cyclones\tIowa State\t0\n3\tEast\tMichigan State Spartans\tMichigan St\t0\n4\tEast\tNebraska Cornhuskers\tNebraska\t0\n5\tEast\tKansas Jayhawks\tKansas\t0\n6\tEast\tNorth Carolina Tar Heels\tUNC\t0\n7\tEast\tUCLA Bruins\tUCLA\t0\n8\tEast\tTCU Horned Frogs\tTCU\t0\n9\tEast\tOhio State Buckeyes\tOhio State\t0\n10\tEast\tMissouri Tigers\tMissouri\t0\n11\tEast\tMiami (OH) Red Hawks\tMiami OH\t1\n11\tEast\tTexas Longhorns\tTexas\t1\n12\tEast\tMcNeese Cowboys\tMcNeese\t0\n13\tEast\tHofstra Pride\tHofstra\t0\n14\tEast\tWright State Raiders\tWright State\t0\n15\tEast\tUMBC Retrievers\tUMBC\t0\n16\tEast\tLong Island Sharks\tLong Island\t1\n16\tEast\tPrairie View A&M Panthers\tPrairie View\t1\n1\tWest\tArizona Wildcats\tArizona\t0\n2\tWest\tPurdue Boilermakers\tPurdue\t0\n3\tWest\tGonzaga Bulldogs\tGonzaga\t0\n4\tWest\tAlabama Crimson Tide\tAlabama\t0\n5\tWest\tWisconsin Badgers\tWisconsin\t0\n6\tWest\tTennessee Volunteers\tTennessee\t0\n7\tWest\tClemson Tigers\tClemson\t0\n8\tWest\tSaint Mary's Gaels\tSaint Mary's\t0\n9\tWest\tVillanova Wildcats\tVillanova\t0\n10\tWest\tTexas A&M Aggies\tTexas A&M\t0\n11\tWest\tSanta Clara Broncos\tSanta Clara\t1\n11\tWest\tSMU Mustangs\tSMU\t1\n12\tWest\tNorthern Iowa Panthers\tNorthern Iowa\t0\n13\tWest\tHawaii Rainbow Warriors\tHawaii\t0\n14\tWest\tPenn Quakers\tPenn\t0\n15\tWest\tFurman Paladins\tFurman\t0\n16\tWest\tHoward Bison\tHoward\t1\n16\tWest\tLehigh Mountain Hawks\tLehigh\t1\n1\tSouth\tFlorida Gators\tFlorida\t0\n2\tSouth\tHouston Cougars\tHouston\t0\n3\tSouth\tIllinois Fighting Illini\tIllinois\t0\n4\tSouth\tSt. John's Red Storm\tSt. John's\t0\n5\tSouth\tArkansas Razorbacks\tArkansas\t0\n6\tSouth\tBYU Cougars\tBYU\t0\n7\tSouth\tKentucky Wildcats\tKentucky\t0\n8\tSouth\tUtah State Aggies\tUtah State\t0\n9\tSouth\tUCF Knights\tUCF\t0\n10\tSouth\tNC State Wolfpack\tNC State\t0\n11\tSouth\tSouth Florida Bulls\tUSF\t0\n12\tSouth\tHigh Point Panthers\tHigh Point\t0\n13\tSouth\tNorth Dakota State Bison\tNDSU\t0\n14\tSouth\tTroy Trojans\tTroy\t0\n15\tSouth\tKennesaw State Owls\tKennesaw St\t0\n16\tSouth\tQueens Royals\tQueens\t0\n1\tMidwest\tMichigan Wolverines\tMichigan\t0\n2\tMidwest\tUConn Huskies\tUConn\t0\n3\tMidwest\tVanderbilt Commodores\tVanderbilt\t0\n4\tMidwest\tVirginia Cavaliers\tVirginia\t0\n5\tMidwest\tTexas Tech Red Raiders\tTexas Tech\t0\n6\tMidwest\tLouisville Cardinals\tLouisville\t0\n7\tMidwest\tMiami Hurricanes\tMiami\t0\n8\tMidwest\tGeorgia Bulldogs\tGeorgia\t0\n9\tMidwest\tSaint Louis Billikens\tSaint Louis\t0\n10\tMidwest\tIowa Hawkeyes\tIowa\t0\n11\tMidwest\tNC State Wolfpack\tNC State\t0\n12\tMidwest\tAkron Zips\tAkron\t0\n13\tMidwest\tCalifornia Baptist Lancers\tCal Baptist\t0\n14\tMidwest\tTennessee State Tigers\tTennessee St\t0\n15\tMidwest\tIdaho Vandals\tIdaho\t0\n16\tMidwest\tSiena Saints\tSiena\t0\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}
