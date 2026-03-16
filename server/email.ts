@@ -45,8 +45,8 @@ export async function sendWelcomeEmail(to: string, name: string): Promise<boolea
                       <tr>
                         <td style="background:#1a1a1a;border-radius:8px;padding:16px 20px;border-left:3px solid #e85d04;">
                           <div style="color:#e85d04;font-size:12px;font-weight:700;letter-spacing:2px;margin-bottom:4px;">⏰ IMPORTANT DEADLINE</div>
-                          <div style="color:#fff;font-size:15px;font-weight:600;">Brackets lock March 20 at 12:15 PM ET</div>
-                          <div style="color:#888;font-size:13px;margin-top:4px;">First tip-off is at 12:15 PM — submit before then!</div>
+                          <div style="color:#fff;font-size:15px;font-weight:600;">Most picks open until March 19 · First Four locks at tip-off March 17–18</div>
+                          <div style="color:#888;font-size:13px;margin-top:4px;">Each game locks individually at tip-off — submit early!</div>
                         </td>
                       </tr>
                     </table>
@@ -135,14 +135,14 @@ export async function sendLockReminderEmail(to: string, name: string): Promise<b
                   <td style="padding:40px;">
                     <p style="color:#fff;font-size:22px;font-weight:700;margin:0 0 16px;">Hey ${name}, time is running out!</p>
                     <p style="color:#aaa;font-size:15px;line-height:1.6;margin:0 0 24px;">
-                      The 2026 NCAA Tournament tips off <strong style="color:#fff;">March 20 at 12:15 PM ET</strong>. 
-                      Once the first game starts, brackets are locked forever. Don't miss your chance!
+                      The 2026 NCAA Tournament tips off <strong style="color:#fff;">March 19 at 12:15 PM ET</strong>. First Four games are March 17–18 and lock at tip-off.
+                      Each game locks individually — don't miss your chance!
                     </p>
                     <table cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 32px;">
                       <tr>
                         <td style="background:#1a0000;border-radius:8px;padding:20px;text-align:center;border:1px solid #440000;">
-                          <div style="color:#ff4444;font-size:28px;font-weight:900;letter-spacing:2px;">MARCH 20 · 12:15 PM ET</div>
-                          <div style="color:#888;font-size:13px;margin-top:8px;">Bracket submission deadline</div>
+                          <div style="color:#ff4444;font-size:28px;font-weight:900;letter-spacing:2px;">MARCH 19 · 12:15 PM ET</div>
+                          <div style="color:#888;font-size:13px;margin-top:8px;">Round of 64 tip-off · First Four locks March 17–18</div>
                         </td>
                       </tr>
                     </table>

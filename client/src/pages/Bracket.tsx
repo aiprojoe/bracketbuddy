@@ -627,10 +627,9 @@ export default function Bracket() {
           <div className="max-w-full mx-auto flex items-start gap-2.5 text-amber-300">
             <AlertTriangle size={16} className="flex-shrink-0 mt-0.5" />
             <p className="text-sm leading-snug">
-              <span className="font-bold">⏰ First Four picks lock at tip-off tonight!</span>
-              {" "}Lock in your picks before games start:{" "}
+              <span className="font-bold">⏰ Heads up — some picks lock tomorrow!</span>
+              {" "}First Four games tip off March 17–18 and lock at tip-off. All other picks are open until Thursday March 19:{" "}
               <span className="text-amber-200">{firstFourWarning.map(g => g.label).join(" · ")}</span>
-              {" — "}picks for these matchups cannot be changed once the game tips off.
             </p>
           </div>
         </div>
@@ -856,7 +855,7 @@ export default function Bracket() {
           <div>
             <div className="flex items-center gap-3 mb-6">
               <h2 className="font-display text-3xl text-white">FIRST FOUR</h2>
-              <div className="text-sm text-white/40">Play-in games · March 18–19 · Winners advance to Round of 64 · Picks lock March 20</div>
+              <div className="text-sm text-white/40">Play-in games · March 17–18 · Winners advance to Round of 64 · These picks lock at tip-off</div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl">
               {getFirstFourMatchups().map((ff) => (

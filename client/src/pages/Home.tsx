@@ -61,8 +61,9 @@ const achievements = [
   { icon: "🎤", name: "Voice Commander", rarity: "rare", desc: "10 voice picks made" },
 ];
 
-// Countdown to bracket lock (March 20, 2026 12:15 PM ET — Thursday Round of 64 tip-off)
-const LOCK_DATE = new Date("2026-03-20T12:15:00-04:00");
+// Global lock: Thursday March 19, 12:15 PM ET (Round of 64 tip-off)
+// First Four games lock individually at tip-off March 17-18
+const GLOBAL_LOCK_DATE = new Date("2026-03-19T16:15:00Z"); // Thu Mar 19, 12:15 PM ET
 
 function useCountdown(target: Date) {
   const [timeLeft, setTimeLeft] = useState(() => Math.max(0, target.getTime() - Date.now()));
@@ -79,7 +80,7 @@ function useCountdown(target: Date) {
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
-  const countdown = useCountdown(LOCK_DATE);
+  const countdown = useCountdown(GLOBAL_LOCK_DATE);
 
   // Fire welcome toast + auto-redirect new users to bracket
   useWelcome(user ? { id: user.id, name: user.name, bracketCount: user.bracketCount ?? 0 } : null);
@@ -206,7 +207,7 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            <p className="text-white/40 text-sm mt-4">March 20 · Round of 64 tip-off · No changes after lock</p>
+            <p className="text-white/40 text-sm mt-4">Most picks lock Thursday March 19 · First Four games lock at tip-off March 17–18</p>
           </div>
         </section>
       )}
@@ -381,7 +382,7 @@ export default function Home() {
           <Crown size={48} className="text-[oklch(0.78_0.18_80)] mx-auto mb-6" />
           <h2 className="font-display text-6xl text-white mb-4">READY TO DOMINATE?</h2>
           <p className="text-white/60 text-xl mb-8">
-            The bracket is out. Get your picks in before March 20 (Thursday tip-off) — First Four picks welcome! Show the world who the real March Madness oracle is.
+            Most picks are open until Thursday March 19 — but First Four games lock at tip-off tomorrow night. Don't wait! Show the world who the real March Madness oracle is.
           </p>
           {isAuthenticated ? (
             <Link href="/bracket">

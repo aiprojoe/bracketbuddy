@@ -307,3 +307,17 @@
 - [x] UX: Add og:url, og:image, twitter:image, canonical to index.html + generated branded OG image (1200x630)
 - [x] UX: ChallengeInvite already-joined state already implemented — verified no change needed
 - [x] UX: Leaderboard shows no message before tournament starts — added pre-tournament zero-score message
+
+## URGENT Fixes (March 16 — First Four Tomorrow)
+- [ ] Fix Home page countdown: show First Four is TOMORROW (March 17), not March 20
+- [ ] Update CTA copy to reflect First Four urgency
+- [ ] Update leaderboard pre-tournament message date from March 20 to March 17
+
+## Messaging/Lock Fixes (March 16 — Batch 5)
+- [x] Fix Home countdown to Thursday March 19 global lock (not March 20 or March 17)
+- [x] Update countdown label: "Most picks lock Thursday March 19 · First Four games lock at tip-off March 17–18"
+- [x] Update CTA copy to reflect per-game locking and Thursday deadline
+- [x] Fix First Four warning banner text in Bracket.tsx
+- [x] Fix First Four tab label dates in Bracket.tsx
+- [x] Fix email templates: welcome email and lock reminder dates (March 19 + per-game locking language)
+- [x] Verify autoFill isUpset fix is already applied (winnerTeam.seed > loserTeam.seed confirmed)

@@ -174,7 +174,7 @@ export default function Leaderboard() {
 
           {leaderboard.length > 0 && leaderboard.every((u) => (u.totalPoints ?? 0) === 0) && (
             <p className="text-center text-white/30 text-sm mt-4">
-              🕐 Tournament starts March 20 — scores update live as games are scored
+              🕐 First Four starts March 17 — scores update live as games are scored
             </p>
           )}
 
