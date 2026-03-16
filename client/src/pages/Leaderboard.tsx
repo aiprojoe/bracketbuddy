@@ -172,6 +172,12 @@ export default function Leaderboard() {
             </div>
           )}
 
+          {leaderboard.length > 0 && leaderboard.every((u) => (u.totalPoints ?? 0) === 0) && (
+            <p className="text-center text-white/30 text-sm mt-4">
+              🕐 Tournament starts March 20 — scores update live as games are scored
+            </p>
+          )}
+
           {!isAuthenticated && (
             <div className="mt-6 p-4 rounded-xl bg-[oklch(0.65_0.22_35/0.1)] border border-[oklch(0.65_0.22_35/0.3)] text-center">
               <p className="text-white/70 mb-3">Sign in to appear on the leaderboard!</p>

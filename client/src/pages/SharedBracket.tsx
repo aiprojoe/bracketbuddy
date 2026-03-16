@@ -9,6 +9,8 @@ export default function SharedBracket() {
   const params = useParams<{ token: string }>();
   const token = params.token ?? "";
 
+  const { data: teamsData } = trpc.teams.getAll.useQuery();
+
   const { data, isLoading } = trpc.bracket.getByShareToken.useQuery(
     { token },
     { enabled: !!token }
@@ -118,6 +120,7 @@ export default function SharedBracket() {
               championship: "Championship",
             };
             if (roundPicks.length === 0) return null;
+            const upsetCount = roundPicks.filter((p) => p.isUpset).length;
             return (
               <div key={round} className="p-4 rounded-xl bg-[oklch(0.14_0.015_260)] border border-white/10">
                 <div className="flex items-center justify-between mb-2">
@@ -126,9 +129,30 @@ export default function SharedBracket() {
                   </span>
                   <span className="text-xs text-white/40">{roundPicks.length} picks</span>
                 </div>
-                <div className="text-xs text-white/50">
-                  {roundPicks.filter((p) => p.isUpset).length} upset picks in this round
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {roundPicks.map((pick) => {
+                    const team = teamsData?.find((t) => t.id === pick.pickedTeamId);
+                    const name = team?.shortName ?? team?.name ?? "Unknown";
+                    return (
+                      <span
+                        key={pick.id}
+                        className={`text-xs px-2 py-0.5 rounded-full ${
+                          pick.isUpset
+                            ? "bg-[oklch(0.65_0.22_35/0.25)] text-[oklch(0.85_0.18_35)] border border-[oklch(0.65_0.22_35/0.4)]"
+                            : "bg-white/10 text-white/70"
+                        }`}
+                        title={pick.isUpset ? "Upset pick" : ""}
+                      >
+                        {pick.isUpset ? "⚡ " : ""}{name}
+                      </span>
+                    );
+                  })}
                 </div>
+                {upsetCount > 0 && (
+                  <div className="text-xs text-[oklch(0.75_0.18_35)] mt-2">
+                    ⚡ {upsetCount} upset pick{upsetCount !== 1 ? "s" : ""} in this round
+                  </div>
+                )}
               </div>
             );
           })}

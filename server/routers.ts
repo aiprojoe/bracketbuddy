@@ -303,9 +303,10 @@ export const appRouter = router({
 
         // Save all picks via upsert
         for (const p of picksToSave) {
-          const isUpset = p.winnerId === p.team2.id && p.team2.seed > p.team1.seed
-            ? false // team2 is always higher seed in our setup
-            : false;
+          if (isMatchupLocked(p.matchupId)) continue; // skip games that have already tipped off
+          const winnerTeam = p.winnerId === p.team1.id ? p.team1 : p.team2;
+          const loserTeam = p.winnerId === p.team1.id ? p.team2 : p.team1;
+          const isUpset = winnerTeam.seed > loserTeam.seed;
           await upsertPick({
             bracketId: bracket.id,
             userId: ctx.user.id,

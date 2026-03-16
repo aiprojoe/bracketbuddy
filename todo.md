@@ -299,3 +299,11 @@
 - [x] VoiceAssistant.tsx — sign-in gate for logged-out users with Google login CTA
 - [x] server/db.ts — add maxPossiblePoints to getLeaderboard select
 - [x] Leaderboard.tsx — show max possible points below score
+
+## Fixes & Improvements (March 16 — Batch 4)
+- [x] Bug: autoFill hardcodes isUpset=false — fix to calculate correctly
+- [x] Bug: autoFill ignores locked matchups — add isMatchupLocked() check
+- [x] UX: SharedBracket shows pick counts only — show actual team names per round
+- [x] UX: Add og:url, og:image, twitter:image, canonical to index.html + generated branded OG image (1200x630)
+- [x] UX: ChallengeInvite already-joined state already implemented — verified no change needed
+- [x] UX: Leaderboard shows no message before tournament starts — added pre-tournament zero-score message
