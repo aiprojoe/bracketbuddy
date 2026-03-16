@@ -9,7 +9,7 @@ import { useConfetti } from "@/hooks/useConfetti";
 import { toast } from "sonner";
 import { Mic, Zap, Share2, RotateCcw, ChevronRight, Trophy, Sparkles, Swords, Printer, Wand2, Info } from "lucide-react";
 import ShareBracketModal from "@/components/ShareBracketModal";
-import { type TeamData, SEED_PAIRS_R64, FIRST_FOUR_MATCHUPS, type Region, type Round, getUpsetProbability } from "../../../shared/bracketData";
+import { type TeamData, SEED_PAIRS_R64, FIRST_FOUR_MATCHUPS, type Region, type Round, getUpsetProbability, getSeedH2H } from "../../../shared/bracketData";
 import VoiceAssistant from "@/components/VoiceAssistant";
 import AIAnalysis from "@/components/AIAnalysis";
 import LiveScoresBanner from "@/components/LiveScoresBanner";
@@ -94,44 +94,155 @@ function TeamSlot({
 const MATCHUP_H = 96; // px — must match the card height in Matchup below
 const CONNECTOR_W = 20; // px wide SVG strip between columns
 
-function BracketConnectors({ count, gap, paddingTop }: { count: number; gap: number; paddingTop: number }) {
+// Tooltip state for connector hover
+function ConnectorTooltip({
+  seed1, seed2, x, y, visible,
+}: { seed1: number; seed2: number; x: number; y: number; visible: boolean }) {
+  if (!visible) return null;
+  const h2h = getSeedH2H(seed1, seed2);
+  if (!h2h) return null;
+  const favPct = Math.round((h2h.favWins / h2h.total) * 100);
+  const dogPct = 100 - favPct;
+  return (
+    <div
+      className="absolute z-50 pointer-events-none"
+      style={{ left: x + 8, top: y - 8, transform: "translateY(-100%)" }}
+    >
+      <div className="bg-[oklch(0.12_0.015_260)] border border-white/20 rounded-lg p-3 shadow-2xl min-w-[200px] max-w-[240px]">
+        <div className="text-xs font-bold text-white mb-1">
+          Seed {h2h.favSeed} vs Seed {h2h.dogSeed}
+        </div>
+        <div className="flex items-center gap-2 mb-2">
+          <div className="flex-1">
+            <div className="text-[10px] text-white/50 mb-0.5">#{h2h.favSeed} seeds</div>
+            <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-[oklch(0.65_0.22_35)]"
+                style={{ width: `${favPct}%` }}
+              />
+            </div>
+            <div className="text-[10px] text-[oklch(0.65_0.22_35)] font-bold mt-0.5">{h2h.favWins}–{h2h.dogWins} ({favPct}%)</div>
+          </div>
+        </div>
+        <div className="text-[10px] text-white/40 italic leading-tight">{h2h.funFact}</div>
+      </div>
+    </div>
+  );
+}
+
+function BracketConnectors({
+  count, gap, paddingTop, seedPairs,
+}: {
+  count: number;
+  gap: number;
+  paddingTop: number;
+  seedPairs?: Array<[number, number] | null>; // seed pair for each matchup pair (top then bottom)
+}) {
+  const [hoveredPair, setHoveredPair] = useState<number | null>(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const svgRef = React.useRef<SVGSVGElement>(null);
+
   // 'count' = number of matchups in the LEFT round (e.g. 8 for R64)
-  // Each pair of left matchups connects to one right matchup
   const pairs = Math.ceil(count / 2);
   const totalH = paddingTop + pairs * (MATCHUP_H * 2 + gap) - gap;
   const lines: React.ReactNode[] = [];
 
   for (let i = 0; i < pairs; i++) {
-    // y-center of top matchup in this pair
     const topMatchupCenter = paddingTop + i * (MATCHUP_H * 2 + gap) + MATCHUP_H / 2;
-    // y-center of bottom matchup in this pair
     const botMatchupCenter = topMatchupCenter + MATCHUP_H + gap;
-    // y-midpoint where the connector meets the right slot
     const midY = (topMatchupCenter + botMatchupCenter) / 2;
 
+    // Get seed pair for this connector (top matchup's seeds, if available)
+    const topSeedPair = seedPairs?.[i * 2] ?? null;
+    const hasH2H = topSeedPair ? !!getSeedH2H(topSeedPair[0], topSeedPair[1]) : false;
+    const isHovered = hoveredPair === i;
+
     lines.push(
-      <g key={i} stroke="rgba(255,255,255,0.12)" strokeWidth="1" fill="none">
-        {/* horizontal from top matchup */}
+      <g
+        key={i}
+        stroke={isHovered ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.12)"}
+        strokeWidth={isHovered ? "1.5" : "1"}
+        fill="none"
+        style={{ cursor: hasH2H ? "pointer" : "default" }}
+        onMouseEnter={(e) => {
+          if (!hasH2H) return;
+          const rect = svgRef.current?.getBoundingClientRect();
+          if (rect) setTooltipPos({ x: rect.left + CONNECTOR_W * 2, y: rect.top + midY });
+          setHoveredPair(i);
+        }}
+        onMouseLeave={() => setHoveredPair(null)}
+      >
         <line x1="0" y1={topMatchupCenter} x2={CONNECTOR_W} y2={topMatchupCenter} />
-        {/* horizontal from bottom matchup */}
         <line x1="0" y1={botMatchupCenter} x2={CONNECTOR_W} y2={botMatchupCenter} />
-        {/* vertical joining them */}
         <line x1={CONNECTOR_W} y1={topMatchupCenter} x2={CONNECTOR_W} y2={botMatchupCenter} />
-        {/* short horizontal to next round */}
         <line x1={CONNECTOR_W} y1={midY} x2={CONNECTOR_W * 2} y2={midY} />
+        {/* Invisible wider hit area for easier hover */}
+        {hasH2H && (
+          <rect
+            x={0} y={topMatchupCenter - 4}
+            width={CONNECTOR_W * 2} height={botMatchupCenter - topMatchupCenter + 8}
+            fill="transparent" stroke="none"
+          />
+        )}
+        {/* Small info dot on the vertical connector */}
+        {hasH2H && (
+          <circle
+            cx={CONNECTOR_W} cy={midY}
+            r="3"
+            fill={isHovered ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.15)"}
+            stroke="none"
+          />
+        )}
       </g>
     );
   }
 
   return (
-    <svg
-      width={CONNECTOR_W * 2}
-      height={totalH}
-      className="flex-shrink-0 self-start"
-      style={{ marginTop: 28 /* header offset */ }}
-    >
-      {lines}
-    </svg>
+    <div className="relative flex-shrink-0 self-start" style={{ marginTop: 28 }}>
+      <svg ref={svgRef} width={CONNECTOR_W * 2} height={totalH}>
+        {lines}
+      </svg>
+      {/* Tooltip rendered in a portal-like fixed div */}
+      {hoveredPair !== null && seedPairs?.[hoveredPair * 2] && (
+        <div
+          className="fixed z-50 pointer-events-none"
+          style={{ left: tooltipPos.x + 8, top: tooltipPos.y - 8, transform: "translateY(-100%)" }}
+        >
+          {(() => {
+            const sp = seedPairs![hoveredPair * 2]!;
+            const h2h = getSeedH2H(sp[0], sp[1]);
+            if (!h2h) return null;
+            const favPct = Math.round((h2h.favWins / h2h.total) * 100);
+            return (
+              <div className="bg-[oklch(0.12_0.015_260)] border border-white/20 rounded-lg p-3 shadow-2xl min-w-[200px] max-w-[250px]">
+                <div className="text-xs font-bold text-white mb-2">
+                  #{h2h.favSeed} vs #{h2h.dogSeed} Seeds — All-Time Record
+                </div>
+                <div className="mb-2">
+                  <div className="flex justify-between text-[10px] text-white/50 mb-1">
+                    <span>#{h2h.favSeed} seeds</span>
+                    <span>{h2h.favWins}–{h2h.dogWins}</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-[oklch(0.65_0.22_35)] transition-all"
+                      style={{ width: `${favPct}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-[10px] mt-1">
+                    <span className="text-[oklch(0.65_0.22_35)] font-bold">{favPct}% win rate</span>
+                    <span className="text-white/30">{100 - favPct}% upsets</span>
+                  </div>
+                </div>
+                <div className="text-[10px] text-white/40 italic leading-snug border-t border-white/10 pt-2">
+                  {h2h.funFact}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -738,6 +849,15 @@ export default function Bracket() {
                 const prevGapPx = prevRound === "round64" ? 12 : prevRound === "round32" ? 108 : prevRound === "sweet16" ? 228 : 468;
                 const prevPadTopPx = prevRound === "round64" ? 0 : prevRound === "round32" ? 54 : prevRound === "sweet16" ? 114 : 234;
 
+                // Build seedPairs for the connector: one entry per matchup in prevMatchups
+                // Each entry is [team1.seed, team2.seed] or null if seeds unknown
+                const connectorSeedPairs: Array<[number, number] | null> = prevMatchups.map((pm) => {
+                  const s1 = pm.team1?.seed;
+                  const s2 = pm.team2?.seed;
+                  if (s1 !== undefined && s2 !== undefined) return [s1, s2];
+                  return null;
+                });
+
                 return (
                   <React.Fragment key={round}>
                     {/* SVG connector lines from previous round into this one */}
@@ -746,6 +866,7 @@ export default function Bracket() {
                         count={prevMatchups.length}
                         gap={prevGapPx}
                         paddingTop={prevPadTopPx}
+                        seedPairs={connectorSeedPairs}
                       />
                     )}
 

@@ -225,3 +225,13 @@
 - [x] Add connector from Elite Eight into Region Winner slot
 - [x] Add React.Fragment key to fix React warning
 - [x] 0 TypeScript errors, Vite HMR clean
+
+## Connector Line Seed H2H Tooltip
+- [x] Add SEED_H2H_RECORDS data to shared/bracketData.ts (all 8 R64 seed matchups with wins/losses/pct + fun facts)
+- [x] Add getSeedH2H() helper to bracketData.ts
+- [x] Rewrite BracketConnectors to accept seedPairs prop and show tooltip on hover
+- [x] Tooltip shows: seed matchup title, win/loss record, animated progress bar, win%, and fun fact
+- [x] Small info dot on vertical connector line indicates hoverable area
+- [x] Connector lines highlight on hover (brighter stroke)
+- [x] Pass connectorSeedPairs from matchup data into BracketConnectors in bracket grid render
+- [x] 0 TypeScript errors, Vite HMR clean
