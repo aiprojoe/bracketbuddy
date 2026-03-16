@@ -784,9 +784,9 @@ export default function Bracket() {
 
             {/* Final Four tab */}
             <button
-              onClick={() => setActiveTab("FirstFour")}
+              onClick={() => setActiveTab("FinalFour")}
               className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                activeTab === "FirstFour"
+                activeTab === "FinalFour"
                   ? "bg-[oklch(0.78_0.18_80/0.2)] text-[oklch(0.78_0.18_80)]"
                   : "text-[oklch(0.78_0.18_80/0.7)] hover:bg-[oklch(0.78_0.18_80/0.1)]"
               }`}
