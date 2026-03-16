@@ -800,6 +800,70 @@ IMPORTANT: Only output JSON. No other text.`,
     }),
   }),
 
+  // ─── Admin Delete ─────────────────────────────────────────────────────────
+  adminDelete: router({
+    // Delete a user and all their associated data (brackets, picks, achievements, challenges)
+    deleteUser: protectedProcedure
+      .input(z.object({ userId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
+        if (ctx.user.id === input.userId) throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot delete your own account" });
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+        // Delete in dependency order
+        await db.delete(picks).where(eq(picks.userId, input.userId));
+        const userBrackets = await db.select({ id: brackets.id }).from(brackets).where(eq(brackets.userId, input.userId));
+        for (const b of userBrackets) {
+          await db.delete(picks).where(eq(picks.bracketId, b.id));
+        }
+        await db.delete(brackets).where(eq(brackets.userId, input.userId));
+        await db.delete(users).where(eq(users.id, input.userId));
+        return { success: true };
+      }),
+    // Delete a single bracket and its picks
+    deleteBracket: protectedProcedure
+      .input(z.object({ bracketId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+        await db.delete(picks).where(eq(picks.bracketId, input.bracketId));
+        await db.delete(brackets).where(eq(brackets.id, input.bracketId));
+        return { success: true };
+      }),
+    // List all users with their bracket count (for admin delete UI)
+    listUsers: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+      return db
+        .select({
+          id: users.id,
+          name: users.name,
+          email: users.email,
+          loginMethod: users.loginMethod,
+          totalPoints: users.totalPoints,
+          bracketCount: users.bracketCount,
+          createdAt: users.createdAt,
+        })
+        .from(users)
+        .orderBy(desc(users.createdAt));
+    }),
+    // List all brackets for a specific user
+    listBrackets: protectedProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+        return db
+          .select({ id: brackets.id, name: brackets.name, totalPoints: brackets.totalPoints, createdAt: brackets.createdAt })
+          .from(brackets)
+          .where(eq(brackets.userId, input.userId))
+          .orderBy(desc(brackets.createdAt));
+      }),
+  }),
+
   // ─── Email ──────────────────────────────────────────────────────────────────
   email: router({
     // Admin: send bracket lock reminder to all users with email

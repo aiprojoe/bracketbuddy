@@ -346,3 +346,9 @@
 ## Urgent Copy Fixes (March 17 Launch)
 - [x] Fix LOCK_DATE in Home.tsx to use First Four date (March 17) with dynamic label
 - [x] Fix CTA copy in Home.tsx from "March 20" to First Four tomorrow March 17
+
+## Admin Delete Controls
+- [x] Add deleteUser tRPC procedure (admin-only, cascades to brackets/picks)
+- [x] Add deleteBracket tRPC procedure (admin-only)
+- [x] Add user list with delete buttons to Admin panel
+- [x] Add confirmation dialog before delete

@@ -30,6 +30,8 @@ import {
   ChevronDown,
   ChevronUp,
   Download,
+  Trash2,
+  ChevronRight as ChevronRightIcon,
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -132,6 +134,7 @@ export default function Admin() {
   const [teamsJson, setTeamsJson] = useState(TEAM_TEMPLATE);
   const [clearPicks, setClearPicks] = useState(false);
   const [jsonError, setJsonError] = useState<string | null>(null);
+  const [expandedUserId, setExpandedUserId] = useState<number | null>(null);
 
   const { data: config, refetch: refetchConfig } = trpc.tournament.config.useQuery();
   const { data: liveScores, refetch: refetchScores } = trpc.tournament.liveScores.useQuery();
@@ -200,6 +203,29 @@ export default function Admin() {
     undefined,
     { enabled: false }
   );
+
+  // Delete management
+  const { data: userList, refetch: refetchUserList } = trpc.adminDelete.listUsers.useQuery();
+  const { data: expandedBrackets, refetch: refetchBrackets } = trpc.adminDelete.listBrackets.useQuery(
+    { userId: expandedUserId ?? 0 },
+    { enabled: expandedUserId !== null }
+  );
+  const deleteUserMutation = trpc.adminDelete.deleteUser.useMutation({
+    onSuccess: () => { toast.success("User deleted"); refetchUserList(); setExpandedUserId(null); },
+    onError: (err) => toast.error(`Delete failed: ${err.message}`),
+  });
+  const deleteBracketMutation = trpc.adminDelete.deleteBracket.useMutation({
+    onSuccess: () => { toast.success("Bracket deleted"); refetchBrackets(); refetchUserList(); },
+    onError: (err) => toast.error(`Delete failed: ${err.message}`),
+  });
+  function handleDeleteUser(userId: number, name: string | null) {
+    if (!window.confirm(`Delete user "${name ?? userId}" and ALL their brackets/picks? This cannot be undone.`)) return;
+    deleteUserMutation.mutate({ userId });
+  }
+  function handleDeleteBracket(bracketId: number, bracketName: string | null) {
+    if (!window.confirm(`Delete bracket "${bracketName ?? bracketId}" and all its picks? This cannot be undone.`)) return;
+    deleteBracketMutation.mutate({ bracketId });
+  }
 
   const handleExportUsers = async () => {
     const result = await fetchUsers();
@@ -342,6 +368,82 @@ export default function Admin() {
             Includes: ID, name, email, login method, total points, bracket count, sign-up date, last seen.
             Only you can access this.
           </p>
+        </div>
+
+        {/* Manage Users — Delete */}
+        <div className="rounded-2xl border border-red-500/20 bg-[oklch(0.14_0.015_260)] p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Trash2 size={20} className="text-red-400" />
+            <div>
+              <h2 className="font-display text-2xl text-white">MANAGE USERS</h2>
+              <p className="text-white/50 text-sm mt-0.5">Delete test signups and their brackets. Destructive — cannot be undone.</p>
+            </div>
+          </div>
+          {!userList ? (
+            <div className="flex items-center gap-2 text-white/40 text-sm"><Loader2 size={14} className="animate-spin" /> Loading users...</div>
+          ) : userList.length === 0 ? (
+            <p className="text-white/40 text-sm">No users yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {userList.map((u) => (
+                <div key={u.id} className="rounded-xl border border-white/10 bg-white/3 overflow-hidden">
+                  {/* User row */}
+                  <div className="flex items-center gap-3 px-4 py-3">
+                    <button
+                      onClick={() => {
+                        const next = expandedUserId === u.id ? null : u.id;
+                        setExpandedUserId(next);
+                        if (next !== null) refetchBrackets();
+                      }}
+                      className="flex items-center gap-2 flex-1 text-left"
+                    >
+                      <ChevronRightIcon
+                        size={14}
+                        className={`text-white/40 transition-transform ${expandedUserId === u.id ? "rotate-90" : ""}`}
+                      />
+                      <span className="text-white font-medium text-sm">{u.name ?? "(no name)"}</span>
+                      <span className="text-white/40 text-xs">{u.email ?? ""}</span>
+                      <span className="ml-auto text-white/30 text-xs">{u.bracketCount} bracket{u.bracketCount !== 1 ? "s" : ""} · {u.loginMethod}</span>
+                    </button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={deleteUserMutation.isPending}
+                      onClick={() => handleDeleteUser(u.id, u.name)}
+                      className="border-red-500/30 text-red-400 hover:bg-red-500/10 bg-transparent text-xs px-2 py-1 h-auto"
+                    >
+                      <Trash2 size={12} className="mr-1" /> Delete User
+                    </Button>
+                  </div>
+                  {/* Expanded brackets */}
+                  {expandedUserId === u.id && (
+                    <div className="border-t border-white/10 px-6 py-3 space-y-2 bg-white/2">
+                      {!expandedBrackets ? (
+                        <div className="text-white/40 text-xs flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> Loading brackets...</div>
+                      ) : expandedBrackets.length === 0 ? (
+                        <p className="text-white/30 text-xs">No brackets.</p>
+                      ) : (
+                        expandedBrackets.map((b) => (
+                          <div key={b.id} className="flex items-center gap-3">
+                            <span className="text-white/60 text-xs flex-1">{b.name ?? `Bracket #${b.id}`} · {b.totalPoints} pts · {new Date(b.createdAt).toLocaleDateString()}</span>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={deleteBracketMutation.isPending}
+                              onClick={() => handleDeleteBracket(b.id, b.name)}
+                              className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10 bg-transparent text-xs px-2 py-1 h-auto"
+                            >
+                              <Trash2 size={12} className="mr-1" /> Delete Bracket
+                            </Button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Controls */}
