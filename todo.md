@@ -370,3 +370,10 @@
 - [x] Leaderboard: sort/display by bracket game points only (brackets.totalPoints), add "Game picks only" note
 - [x] Profile: add Achievement Points stat card showing total achievement points earned
 - [x] Leaderboard: add small subtitle "Points from correct game picks only — starts at 0"
+
+## Bug Fixes (March 18)
+- [x] Fix duplicate key 720001 on Leaderboard (two users with same id in query result)
+- [x] Ensure First Four game results are synced and picks scored
+- [x] Fix espnSync.ts buildMatchupId to generate FirstFour-N format matching picks table
+- [x] Fix gameResults DB: corrected matchupIds, removed phantom West-16 game, inserted Howard vs UMBC result
+- [x] Retroactively scored FirstFour-0 (Texas) and FirstFour-3 (Howard) picks

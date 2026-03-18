@@ -315,20 +315,23 @@ export async function getLeaderboard(limit = 50) {
   if (!db) return [];
   // Use bracket game points only (not user.totalPoints which includes achievement
   // points) so the leaderboard starts at 0 and only moves when real games score.
-  return db
+  // Use MAX aggregation so users with multiple brackets appear only once (best bracket wins).
+  const rows = await db
     .select({
       id: users.id,
       name: users.name,
-      totalPoints: brackets.totalPoints,
+      totalPoints: sql<number>`MAX(${brackets.totalPoints})`.as('totalPoints'),
       bracketCount: users.bracketCount,
-      correctPicks: brackets.correctPicks,
-      maxPossiblePoints: brackets.maxPossiblePoints,
-      bracketId: brackets.id,
+      correctPicks: sql<number>`MAX(${brackets.correctPicks})`.as('correctPicks'),
+      maxPossiblePoints: sql<number>`MAX(${brackets.maxPossiblePoints})`.as('maxPossiblePoints'),
+      bracketId: sql<number>`(SELECT id FROM brackets WHERE userId = ${users.id} AND year = 2026 ORDER BY totalPoints DESC LIMIT 1)`.as('bracketId'),
     })
     .from(users)
     .leftJoin(brackets, and(eq(brackets.userId, users.id), eq(brackets.year, 2026)))
-    .orderBy(desc(brackets.totalPoints), desc(brackets.correctPicks))
+    .groupBy(users.id, users.name, users.bracketCount)
+    .orderBy(desc(sql`MAX(${brackets.totalPoints})`), desc(sql`MAX(${brackets.correctPicks})`))
     .limit(limit);
+  return rows;
 }
 
 export async function getComments(limit = 30) {

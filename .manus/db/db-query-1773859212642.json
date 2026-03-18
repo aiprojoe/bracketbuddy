@@ -1,0 +1,60 @@
+{
+  "query": "\n-- Update bracket totalPoints and correctPicks for FirstFour-0 correct picks (Texas, 5pts each)\nUPDATE brackets b\nSET \n  totalPoints = totalPoints + (\n    SELECT COALESCE(SUM(p.pointsEarned), 0) \n    FROM picks p \n    WHERE p.bracketId = b.id AND p.matchupId IN ('FirstFour-0', 'FirstFour-3') AND p.isCorrect = 1\n  ),\n  correctPicks = correctPicks + (\n    SELECT COUNT(*) \n    FROM picks p \n    WHERE p.bracketId = b.id AND p.matchupId IN ('FirstFour-0', 'FirstFour-3') AND p.isCorrect = 1\n  )\nWHERE EXISTS (\n  SELECT 1 FROM picks p \n  WHERE p.bracketId = b.id AND p.matchupId IN ('FirstFour-0', 'FirstFour-3') AND p.isCorrect = 1\n);\n\n-- Update user totalPoints for correct picks\nUPDATE users u\nSET totalPoints = totalPoints + (\n  SELECT COALESCE(SUM(p.pointsEarned), 0)\n  FROM picks p\n  WHERE p.userId = u.id AND p.matchupId IN ('FirstFour-0', 'FirstFour-3') AND p.isCorrect = 1\n)\nWHERE EXISTS (\n  SELECT 1 FROM picks p\n  WHERE p.userId = u.id AND p.matchupId IN ('FirstFour-0', 'FirstFour-3') AND p.isCorrect = 1\n);\n\n-- Mark the new Howard game as scored\nUPDATE gameResults SET isScored = 1 WHERE matchupId = 'FirstFour-3' AND isComplete = 1;\n\n-- Verify: show leaderboard preview (bracket game points)\nSELECT u.name, MAX(b.totalPoints) as gamePoints, MAX(b.correctPicks) as correct\nFROM users u\nLEFT JOIN brackets b ON b.userId = u.id AND b.year = 2026\nGROUP BY u.id, u.name\nORDER BY MAX(b.totalPoints) DESC\nLIMIT 10;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute \n-- Update bracket totalPoints and correctPicks for FirstFour-0 correct picks (Texas, 5pts each)\nUPDATE brackets b\nSET \n  totalPoints = totalPoints + (\n    SELECT COALESCE(SUM(p.pointsEarned), 0) \n    FROM picks p \n    WHERE p.bracketId = b.id AND p.matchupId IN ('FirstFour-0', 'FirstFour-3') AND p.isCorrect = 1\n  ),\n  correctPicks = correctPicks + (\n    SELECT COUNT(*) \n    FROM picks p \n    WHERE p.bracketId = b.id AND p.matchupId IN ('FirstFour-0', 'FirstFour-3') AND p.isCorrect = 1\n  )\nWHERE EXISTS (\n  SELECT 1 FROM picks p \n  WHERE p.bracketId = b.id AND p.matchupId IN ('FirstFour-0', 'FirstFour-3') AND p.isCorrect = 1\n);\n\n-- Update user totalPoints for correct picks\nUPDATE users u\nSET totalPoints = totalPoints + (\n  SELECT COALESCE(SUM(p.pointsEarned), 0)\n  FROM picks p\n  WHERE p.userId = u.id AND p.matchupId IN ('FirstFour-0', 'FirstFour-3') AND p.isCorrect = 1\n)\nWHERE EXISTS (\n  SELECT 1 FROM picks p\n  WHERE p.userId = u.id AND p.matchupId IN ('FirstFour-0', 'FirstFour-3') AND p.isCorrect = 1\n);\n\n-- Mark the new Howard game as scored\nUPDATE gameResults SET isScored = 1 WHERE matchupId = 'FirstFour-3' AND isComplete = 1;\n\n-- Verify: show leaderboard preview (bracket game points)\nSELECT u.name, MAX(b.totalPoints) as gamePoints, MAX(b.correctPicks) as correct\nFROM users u\nLEFT JOIN brackets b ON b.userId = u.id AND b.year = 2026\nGROUP BY u.id, u.name\nORDER BY MAX(b.totalPoints) DESC\nLIMIT 10;\n",
+  "rows": [
+    {
+      "name": "Kathryn McAdam",
+      "gamePoints": "10",
+      "correct": "2"
+    },
+    {
+      "name": "Michael Clapper",
+      "gamePoints": "10",
+      "correct": "2"
+    },
+    {
+      "name": "Shannon Clark",
+      "gamePoints": "10",
+      "correct": "2"
+    },
+    {
+      "name": "Mike McAdam",
+      "gamePoints": "5",
+      "correct": "1"
+    },
+    {
+      "name": "Elijah Currie",
+      "gamePoints": "5",
+      "correct": "1"
+    },
+    {
+      "name": "Steve Glamzi",
+      "gamePoints": "5",
+      "correct": "1"
+    },
+    {
+      "name": "Rhonda Herrando",
+      "gamePoints": "5",
+      "correct": "1"
+    },
+    {
+      "name": "Joe McAdam",
+      "gamePoints": "5",
+      "correct": "1"
+    },
+    {
+      "name": "David May",
+      "gamePoints": "0",
+      "correct": "0"
+    },
+    {
+      "name": "Rondog",
+      "gamePoints": "0",
+      "correct": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\tgamePoints\tcorrect\nKathryn McAdam\t10\t2\nMichael Clapper\t10\t2\nShannon Clark\t10\t2\nMike McAdam\t5\t1\nElijah Currie\t5\t1\nSteve Glamzi\t5\t1\nRhonda Herrando\t5\t1\nJoe McAdam\t5\t1\nDavid May\t0\t0\nRondog\t0\t0\n",
+  "stderr": "",
+  "execution_time_ms": 92
+}

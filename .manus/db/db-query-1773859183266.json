@@ -1,0 +1,28 @@
+{
+  "query": "\n-- Fix game 31: Texas beat NC State (West 11v11) -> FirstFour-0\nUPDATE gameResults SET matchupId = 'FirstFour-0' WHERE id = 31;\n\n-- Delete phantom game 32 (West-firstfour-16v16 with LIU - this doesn't exist in the real bracket)\nDELETE FROM gameResults WHERE id = 32;\n\n-- Fix game 19: West-firstfour-11v11 (scheduled duplicate) -> FirstFour-0\nUPDATE gameResults SET matchupId = 'FirstFour-0' WHERE id = 19;\n\n-- Fix game 20: South-firstfour-16v16 (scheduled) -> FirstFour-1\nUPDATE gameResults SET matchupId = 'FirstFour-1' WHERE id = 20;\n\n-- Add the two tonight games that aren't in DB yet (FirstFour-2 and FirstFour-3)\n-- FirstFour-3: Howard beat UMBC (Midwest 16v16) - completed March 17\n-- Need to insert this as a completed game\nSELECT id, matchupId, isComplete, winnerId FROM gameResults WHERE matchupId LIKE 'FirstFour%' ORDER BY id;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute \n-- Fix game 31: Texas beat NC State (West 11v11) -> FirstFour-0\nUPDATE gameResults SET matchupId = 'FirstFour-0' WHERE id = 31;\n\n-- Delete phantom game 32 (West-firstfour-16v16 with LIU - this doesn't exist in the real bracket)\nDELETE FROM gameResults WHERE id = 32;\n\n-- Fix game 19: West-firstfour-11v11 (scheduled duplicate) -> FirstFour-0\nUPDATE gameResults SET matchupId = 'FirstFour-0' WHERE id = 19;\n\n-- Fix game 20: South-firstfour-16v16 (scheduled) -> FirstFour-1\nUPDATE gameResults SET matchupId = 'FirstFour-1' WHERE id = 20;\n\n-- Add the two tonight games that aren't in DB yet (FirstFour-2 and FirstFour-3)\n-- FirstFour-3: Howard beat UMBC (Midwest 16v16) - completed March 17\n-- Need to insert this as a completed game\nSELECT id, matchupId, isComplete, winnerId FROM gameResults WHERE matchupId LIKE 'FirstFour%' ORDER BY id;\n",
+  "rows": [
+    {
+      "id": "19",
+      "matchupId": "FirstFour-0",
+      "isComplete": "0",
+      "winnerId": "NULL"
+    },
+    {
+      "id": "20",
+      "matchupId": "FirstFour-1",
+      "isComplete": "0",
+      "winnerId": "NULL"
+    },
+    {
+      "id": "31",
+      "matchupId": "FirstFour-0",
+      "isComplete": "1",
+      "winnerId": "60027"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tmatchupId\tisComplete\twinnerId\n19\tFirstFour-0\t0\tNULL\n20\tFirstFour-1\t0\tNULL\n31\tFirstFour-0\t1\t60027\n",
+  "stderr": "",
+  "execution_time_ms": 141
+}

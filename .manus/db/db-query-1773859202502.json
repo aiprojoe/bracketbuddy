@@ -1,0 +1,34 @@
+{
+  "query": "\n-- Insert Howard vs UMBC completed game (FirstFour-3, Midwest 16v16)\n-- Howard (60051) beat UMBC (60050) 86-83 on March 17\nINSERT INTO gameResults (year, round, matchupId, espnGameId, espnStatus, team1Id, team2Id, team1EspnId, team2EspnId, winnerId, team1Score, team2Score, isComplete, isScored, playedAt)\nVALUES (2026, 'firstfour', 'FirstFour-3', '401856433', 'STATUS_FINAL', 60051, 60050, '47', '2378', 60051, 86, 83, 1, 0, '2026-03-17T22:40:00Z');\n\n-- Now retroactively score FirstFour-0 picks (Texas, id=60027, won)\n-- Update picks where matchupId=FirstFour-0 and pickedTeamId=60027 (Texas)\nUPDATE picks \nSET isCorrect = 1, pointsEarned = 5, actualWinnerId = 60027\nWHERE matchupId = 'FirstFour-0' AND pickedTeamId = 60027 AND isCorrect IS NULL;\n\n-- Mark incorrect picks for FirstFour-0 (NC State, id=60028)\nUPDATE picks \nSET isCorrect = 0, pointsEarned = 0, actualWinnerId = 60027\nWHERE matchupId = 'FirstFour-0' AND pickedTeamId = 60028 AND isCorrect IS NULL;\n\n-- Score FirstFour-3 picks (Howard, id=60051, won)\nUPDATE picks \nSET isCorrect = 1, pointsEarned = 5, actualWinnerId = 60051\nWHERE matchupId = 'FirstFour-3' AND pickedTeamId = 60051 AND isCorrect IS NULL;\n\n-- Mark incorrect picks for FirstFour-3 (UMBC, id=60050)\nUPDATE picks \nSET isCorrect = 0, pointsEarned = 0, actualWinnerId = 60051\nWHERE matchupId = 'FirstFour-3' AND pickedTeamId = 60050 AND isCorrect IS NULL;\n\n-- Mark game 31 as scored\nUPDATE gameResults SET isScored = 1 WHERE id = 31;\n\n-- Check how many picks were scored\nSELECT matchupId, isCorrect, COUNT(*) as cnt, SUM(pointsEarned) as totalPts FROM picks WHERE matchupId IN ('FirstFour-0', 'FirstFour-3') GROUP BY matchupId, isCorrect;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute \n-- Insert Howard vs UMBC completed game (FirstFour-3, Midwest 16v16)\n-- Howard (60051) beat UMBC (60050) 86-83 on March 17\nINSERT INTO gameResults (year, round, matchupId, espnGameId, espnStatus, team1Id, team2Id, team1EspnId, team2EspnId, winnerId, team1Score, team2Score, isComplete, isScored, playedAt)\nVALUES (2026, 'firstfour', 'FirstFour-3', '401856433', 'STATUS_FINAL', 60051, 60050, '47', '2378', 60051, 86, 83, 1, 0, '2026-03-17T22:40:00Z');\n\n-- Now retroactively score FirstFour-0 picks (Texas, id=60027, won)\n-- Update picks where matchupId=FirstFour-0 and pickedTeamId=60027 (Texas)\nUPDATE picks \nSET isCorrect = 1, pointsEarned = 5, actualWinnerId = 60027\nWHERE matchupId = 'FirstFour-0' AND pickedTeamId = 60027 AND isCorrect IS NULL;\n\n-- Mark incorrect picks for FirstFour-0 (NC State, id=60028)\nUPDATE picks \nSET isCorrect = 0, pointsEarned = 0, actualWinnerId = 60027\nWHERE matchupId = 'FirstFour-0' AND pickedTeamId = 60028 AND isCorrect IS NULL;\n\n-- Score FirstFour-3 picks (Howard, id=60051, won)\nUPDATE picks \nSET isCorrect = 1, pointsEarned = 5, actualWinnerId = 60051\nWHERE matchupId = 'FirstFour-3' AND pickedTeamId = 60051 AND isCorrect IS NULL;\n\n-- Mark incorrect picks for FirstFour-3 (UMBC, id=60050)\nUPDATE picks \nSET isCorrect = 0, pointsEarned = 0, actualWinnerId = 60051\nWHERE matchupId = 'FirstFour-3' AND pickedTeamId = 60050 AND isCorrect IS NULL;\n\n-- Mark game 31 as scored\nUPDATE gameResults SET isScored = 1 WHERE id = 31;\n\n-- Check how many picks were scored\nSELECT matchupId, isCorrect, COUNT(*) as cnt, SUM(pointsEarned) as totalPts FROM picks WHERE matchupId IN ('FirstFour-0', 'FirstFour-3') GROUP BY matchupId, isCorrect;\n",
+  "rows": [
+    {
+      "matchupId": "FirstFour-3",
+      "isCorrect": "1",
+      "cnt": "6",
+      "totalPts": "30"
+    },
+    {
+      "matchupId": "FirstFour-0",
+      "isCorrect": "0",
+      "cnt": "3",
+      "totalPts": "0"
+    },
+    {
+      "matchupId": "FirstFour-0",
+      "isCorrect": "1",
+      "cnt": "5",
+      "totalPts": "25"
+    },
+    {
+      "matchupId": "FirstFour-3",
+      "isCorrect": "0",
+      "cnt": "2",
+      "totalPts": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "matchupId\tisCorrect\tcnt\ttotalPts\nFirstFour-3\t1\t6\t30\nFirstFour-0\t0\t3\t0\nFirstFour-0\t1\t5\t25\nFirstFour-3\t0\t2\t0\n",
+  "stderr": "",
+  "execution_time_ms": 125
+}

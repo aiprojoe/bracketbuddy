@@ -175,9 +175,24 @@ function matchTeam(
 
 /**
  * Generate our internal matchupId from round, region, and seeds.
- * Must match the format used in Bracket.tsx / bracketData.ts
+ * Must match the format used in Bracket.tsx / bracketData.ts and picks table.
  */
+// Maps ESPN firstfour games to the same matchupId format the frontend/picks use.
+// Order matches FIRST_FOUR_MATCHUPS in shared/bracketData.ts:
+//   0: West 11v11, 1: South 16v16, 2: Midwest 11v11, 3: Midwest 16v16
+const FIRST_FOUR_MAP: Record<string, string> = {
+  "West-11":    "FirstFour-0",
+  "South-16":   "FirstFour-1",
+  "Midwest-11": "FirstFour-2",
+  "Midwest-16": "FirstFour-3",
+};
+
 function buildMatchupId(round: string, region: string | null, seed1: number, seed2: number): string {
+  if (round === "firstfour") {
+    // Use the same matchupId as the frontend picks (FirstFour-0..3)
+    const key = `${region}-${Math.min(seed1, seed2)}`;
+    return FIRST_FOUR_MAP[key] ?? `${region}-firstfour-${Math.min(seed1,seed2)}v${Math.max(seed1,seed2)}`;
+  }
   if (round === "finalfour") {
     // Final Four: East vs West = slot 0, South vs Midwest = slot 1
     if (region === "East" || region === "West") return "FinalFour-0";

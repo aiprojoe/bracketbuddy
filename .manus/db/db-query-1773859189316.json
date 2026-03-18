@@ -1,0 +1,22 @@
+{
+  "query": "\n-- Check Howard and UMBC team IDs\nSELECT id, name, seed, region FROM teams WHERE name LIKE '%Howard%' OR name LIKE '%UMBC%';\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute \n-- Check Howard and UMBC team IDs\nSELECT id, name, seed, region FROM teams WHERE name LIKE '%Howard%' OR name LIKE '%UMBC%';\n",
+  "rows": [
+    {
+      "id": "60050",
+      "name": "UMBC Retrievers",
+      "seed": "16",
+      "region": "Midwest"
+    },
+    {
+      "id": "60051",
+      "name": "Howard Bison",
+      "seed": "16",
+      "region": "Midwest"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tseed\tregion\n60050\tUMBC Retrievers\t16\tMidwest\n60051\tHoward Bison\t16\tMidwest\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}
