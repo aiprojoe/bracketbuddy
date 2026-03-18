@@ -134,7 +134,7 @@ export default function Profile() {
               {[
                 { label: "Total Picks", value: totalPicks, max: 63, color: "text-[oklch(0.65_0.22_35)]" },
                 { label: "Upset Picks", value: upsetPicks, max: null, color: "text-[oklch(0.55_0.2_250)]" },
-                { label: "Total Points", value: (user?.totalPoints ?? 0).toLocaleString(), max: null, color: "text-[oklch(0.78_0.18_80)]" },
+                { label: "Game Points", value: (bracketData?.bracket.totalPoints ?? 0).toLocaleString(), max: null, color: "text-[oklch(0.78_0.18_80)]" },
                 { label: "Badges", value: myAchievements.length, max: allAchievements.length, color: "text-[oklch(0.5_0.2_290)]" },
               ].map(({ label, value, max, color }) => (
                 <div key={label} className="p-4 rounded-xl bg-[oklch(0.14_0.015_260)] border border-white/10">
@@ -143,6 +143,17 @@ export default function Profile() {
                   <div className="text-xs text-white/50 mt-1">{label}</div>
                 </div>
               ))}
+            </div>
+            {/* Achievement Points */}
+            <div className="p-4 rounded-xl bg-[oklch(0.14_0.015_260)] border border-[oklch(0.5_0.2_290/0.3)]">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-semibold text-white/50 uppercase tracking-wider">Achievement Points</span>
+                <Star size={12} className="text-[oklch(0.5_0.2_290)]" />
+              </div>
+              <div className="font-display text-3xl text-[oklch(0.5_0.2_290)]">
+                {myAchievements.reduce((sum, a) => sum + (a.points ?? 0), 0).toLocaleString()}
+              </div>
+              <div className="text-xs text-white/30 mt-1">Earned from badges — not counted in standings</div>
             </div>
           </div>
 

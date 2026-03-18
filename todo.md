@@ -361,3 +361,12 @@
 - [x] Add getBracketById tRPC procedure (public — any logged-in user can view any bracket)
 - [x] Create /bracket/view/:bracketId page showing read-only bracket
 - [x] Add "View Bracket" links from Leaderboard to each user's bracket
+
+## Leaderboard Scoring Fix
+- [ ] Change leaderboard to sort/display by bracket game points only (brackets.totalPoints), not user.totalPoints which includes achievement points
+- [ ] Keep achievements as badges only — don't affect standings
+
+## Final Launch Polish
+- [x] Leaderboard: sort/display by bracket game points only (brackets.totalPoints), add "Game picks only" note
+- [x] Profile: add Achievement Points stat card showing total achievement points earned
+- [x] Leaderboard: add small subtitle "Points from correct game picks only — starts at 0"

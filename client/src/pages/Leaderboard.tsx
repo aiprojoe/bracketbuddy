@@ -70,6 +70,7 @@ export default function Leaderboard() {
             <h1 className="font-display text-5xl text-white">LEADERBOARD</h1>
           </div>
           <p className="text-white/50 text-lg">Who's the real March Madness oracle? 🔮</p>
+          <p className="text-white/30 text-sm mt-1">Points from correct game picks only — standings start at 0 and update live as games are scored</p>
 
           {isAuthenticated && myRank > 0 && (
             <div className="mt-4 inline-flex items-center gap-3 px-4 py-2 rounded-xl bg-[oklch(0.65_0.22_35/0.15)] border border-[oklch(0.65_0.22_35/0.3)]">

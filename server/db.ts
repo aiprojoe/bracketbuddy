@@ -313,12 +313,13 @@ export async function upsertPick(data: {
 export async function getLeaderboard(limit = 50) {
   const db = await getDb();
   if (!db) return [];
-  // Join brackets to get correctPicks for tiebreaking display
+  // Use bracket game points only (not user.totalPoints which includes achievement
+  // points) so the leaderboard starts at 0 and only moves when real games score.
   return db
     .select({
       id: users.id,
       name: users.name,
-      totalPoints: users.totalPoints,
+      totalPoints: brackets.totalPoints,
       bracketCount: users.bracketCount,
       correctPicks: brackets.correctPicks,
       maxPossiblePoints: brackets.maxPossiblePoints,
@@ -326,7 +327,7 @@ export async function getLeaderboard(limit = 50) {
     })
     .from(users)
     .leftJoin(brackets, and(eq(brackets.userId, users.id), eq(brackets.year, 2026)))
-    .orderBy(desc(users.totalPoints), desc(brackets.correctPicks))
+    .orderBy(desc(brackets.totalPoints), desc(brackets.correctPicks))
     .limit(limit);
 }
 
