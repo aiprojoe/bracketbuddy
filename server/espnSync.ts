@@ -376,7 +376,7 @@ export async function syncEspnScores(year = 2026): Promise<SyncResult> {
 
       // Check if game already exists
       const existing = await db
-        .select({ id: gameResults.id, isScored: gameResults.isScored, isComplete: gameResults.isComplete })
+        .select({ id: gameResults.id, matchupId: gameResults.matchupId, isScored: gameResults.isScored, isComplete: gameResults.isComplete })
         .from(gameResults)
         .where(eq(gameResults.espnGameId, game.espnGameId))
         .limit(1);
@@ -392,6 +392,14 @@ export async function syncEspnScores(year = 2026): Promise<SyncResult> {
           team2Score: game.team2Score ?? undefined,
           playedAt: game.playedAt ?? undefined,
         }).where(eq(gameResults.espnGameId, game.espnGameId));
+
+        // If ESPN sync previously stored an old seed-based matchupId (e.g. "East-round32-1v9")
+        // but we now compute a slot-based one (e.g. "East-round32-0"), fix it in the DB
+        // and reset isScored so picks get re-evaluated against the corrected ID.
+        if (existingGame.matchupId !== undefined && existingGame.matchupId !== matchupId) {
+          await db.update(gameResults).set({ matchupId, isScored: false }).where(eq(gameResults.id, existingGame.id));
+          existingGame.isScored = false;
+        }
 
         // Score picks if game just completed and not yet scored
         if (game.isComplete && winnerId && !existingGame.isScored) {
