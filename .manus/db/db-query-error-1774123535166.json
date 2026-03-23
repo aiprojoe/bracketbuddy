@@ -1,0 +1,8 @@
+{
+  "query": "SELECT p.matchupId, p.pickedTeamId, p.isCorrect, p.pointsEarned, p.isScored FROM picks p LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute SELECT p.matchupId, p.pickedTeamId, p.isCorrect, p.pointsEarned, p.isScored FROM picks p LIMIT 20;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'p.isscored' in 'field list'"
+  ]
+}

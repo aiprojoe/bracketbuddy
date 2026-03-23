@@ -1,0 +1,70 @@
+{
+  "query": "SELECT u.name, b.totalPoints, b.correctPicks, b.maxPossiblePoints FROM brackets b JOIN users u ON u.id = b.userId ORDER BY b.totalPoints DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute SELECT u.name, b.totalPoints, b.correctPicks, b.maxPossiblePoints FROM brackets b JOIN users u ON u.id = b.userId ORDER BY b.totalPoints DESC LIMIT 10;",
+  "rows": [
+    {
+      "name": "Shannon Clark",
+      "totalPoints": "230",
+      "correctPicks": "22",
+      "maxPossiblePoints": "2045"
+    },
+    {
+      "name": "Steven Glamzi",
+      "totalPoints": "225",
+      "correctPicks": "21",
+      "maxPossiblePoints": "2130"
+    },
+    {
+      "name": "Rondog",
+      "totalPoints": "210",
+      "correctPicks": "19",
+      "maxPossiblePoints": "2025"
+    },
+    {
+      "name": "Mike McAdam",
+      "totalPoints": "195",
+      "correctPicks": "20",
+      "maxPossiblePoints": "2040"
+    },
+    {
+      "name": "Rhonda Herrando",
+      "totalPoints": "195",
+      "correctPicks": "19",
+      "maxPossiblePoints": "1330"
+    },
+    {
+      "name": "Joe McAdam",
+      "totalPoints": "190",
+      "correctPicks": "18",
+      "maxPossiblePoints": "2040"
+    },
+    {
+      "name": "Nathan Edelen",
+      "totalPoints": "155",
+      "correctPicks": "15",
+      "maxPossiblePoints": "1390"
+    },
+    {
+      "name": "Kathryn McAdam",
+      "totalPoints": "135",
+      "correctPicks": "13",
+      "maxPossiblePoints": "2025"
+    },
+    {
+      "name": "Natasha Y Brown",
+      "totalPoints": "45",
+      "correctPicks": "5",
+      "maxPossiblePoints": "2195"
+    },
+    {
+      "name": "Michael Clapper",
+      "totalPoints": "10",
+      "correctPicks": "2",
+      "maxPossiblePoints": "15"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\ttotalPoints\tcorrectPicks\tmaxPossiblePoints\nShannon Clark\t230\t22\t2045\nSteven Glamzi\t225\t21\t2130\nRondog\t210\t19\t2025\nMike McAdam\t195\t20\t2040\nRhonda Herrando\t195\t19\t1330\nJoe McAdam\t190\t18\t2040\nNathan Edelen\t155\t15\t1390\nKathryn McAdam\t135\t13\t2025\nNatasha Y Brown\t45\t5\t2195\nMichael Clapper\t10\t2\t15\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

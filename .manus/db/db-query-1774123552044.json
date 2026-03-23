@@ -1,0 +1,122 @@
+{
+  "query": "SELECT u.name, u.email, b.totalPoints, b.correctPicks, b.maxPossiblePoints FROM users u JOIN brackets b ON b.userId = u.id ORDER BY b.totalPoints DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute SELECT u.name, u.email, b.totalPoints, b.correctPicks, b.maxPossiblePoints FROM users u JOIN brackets b ON b.userId = u.id ORDER BY b.totalPoints DESC LIMIT 20;",
+  "rows": [
+    {
+      "name": "Shannon Clark",
+      "email": "msuclark103@yahoo.com",
+      "totalPoints": "230",
+      "correctPicks": "22",
+      "maxPossiblePoints": "0"
+    },
+    {
+      "name": "Steven Glamzi",
+      "email": "sglamzi@gmail.com",
+      "totalPoints": "225",
+      "correctPicks": "21",
+      "maxPossiblePoints": "0"
+    },
+    {
+      "name": "Rondog",
+      "email": "rondog1972@live.com",
+      "totalPoints": "210",
+      "correctPicks": "19",
+      "maxPossiblePoints": "0"
+    },
+    {
+      "name": "Rhonda Herrando",
+      "email": "rhondaannherrando@yahoo.com",
+      "totalPoints": "195",
+      "correctPicks": "19",
+      "maxPossiblePoints": "0"
+    },
+    {
+      "name": "Mike McAdam",
+      "email": "roosterontheroad@gmail.com",
+      "totalPoints": "195",
+      "correctPicks": "20",
+      "maxPossiblePoints": "0"
+    },
+    {
+      "name": "Joe McAdam",
+      "email": "team@unrivaledbusinesssolutions.com",
+      "totalPoints": "190",
+      "correctPicks": "18",
+      "maxPossiblePoints": "0"
+    },
+    {
+      "name": "Nathan Edelen",
+      "email": "nathanedelen@gmail.com",
+      "totalPoints": "155",
+      "correctPicks": "15",
+      "maxPossiblePoints": "0"
+    },
+    {
+      "name": "Kathryn McAdam",
+      "email": "kathryn@unstoppable-joy.com",
+      "totalPoints": "135",
+      "correctPicks": "13",
+      "maxPossiblePoints": "0"
+    },
+    {
+      "name": "Natasha Y Brown",
+      "email": "nbrown@thesavvypointe.com",
+      "totalPoints": "30",
+      "correctPicks": "3",
+      "maxPossiblePoints": "0"
+    },
+    {
+      "name": "Michael Clapper",
+      "email": "happyclappyai@gmail.com",
+      "totalPoints": "10",
+      "correctPicks": "2",
+      "maxPossiblePoints": "0"
+    },
+    {
+      "name": "Elijah Currie",
+      "email": "19ejc01@gmail.com",
+      "totalPoints": "5",
+      "correctPicks": "1",
+      "maxPossiblePoints": "0"
+    },
+    {
+      "name": "David May",
+      "email": "maydc45@hotmail.com",
+      "totalPoints": "0",
+      "correctPicks": "0",
+      "maxPossiblePoints": "0"
+    },
+    {
+      "name": "Rhonda Herrando",
+      "email": "rhondaannherrando@yahoo.com",
+      "totalPoints": "0",
+      "correctPicks": "0",
+      "maxPossiblePoints": "0"
+    },
+    {
+      "name": "Peter Savarino",
+      "email": "petersavarino@gmail.com",
+      "totalPoints": "0",
+      "correctPicks": "0",
+      "maxPossiblePoints": "0"
+    },
+    {
+      "name": "Kathryn McAdam",
+      "email": "team@kathrynmcadam.com",
+      "totalPoints": "0",
+      "correctPicks": "0",
+      "maxPossiblePoints": "0"
+    },
+    {
+      "name": "Joe McAdam",
+      "email": "team@unrivaledbusinesssolutions.com",
+      "totalPoints": "0",
+      "correctPicks": "0",
+      "maxPossiblePoints": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\temail\ttotalPoints\tcorrectPicks\tmaxPossiblePoints\nShannon Clark\tmsuclark103@yahoo.com\t230\t22\t0\nSteven Glamzi\tsglamzi@gmail.com\t225\t21\t0\nRondog\trondog1972@live.com\t210\t19\t0\nRhonda Herrando\trhondaannherrando@yahoo.com\t195\t19\t0\nMike McAdam\troosterontheroad@gmail.com\t195\t20\t0\nJoe McAdam\tteam@unrivaledbusinesssolutions.com\t190\t18\t0\nNathan Edelen\tnathanedelen@gmail.com\t155\t15\t0\nKathryn McAdam\tkathryn@unstoppable-joy.com\t135\t13\t0\nNatasha Y Brown\tnbrown@thesavvypointe.com\t30\t3\t0\nMichael Clapper\thappyclappyai@gmail.com\t10\t2\t0\nElijah Currie\t19ejc01@gmail.com\t5\t1\t0\nDavid May\tmaydc45@hotmail.com\t0\t0\t0\nRhonda Herrando\trhondaannherrando@yahoo.com\t0\t0\t0\nPeter Savarino\tpetersavarino@gmail.com\t0\t0\t0\nKathryn McAdam\tteam@kathrynmcadam.com\t0\t0\t0\nJoe McAdam\tteam@unrivaledbusinesssolutions.com\t0\t0\t0\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}

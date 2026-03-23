@@ -1,0 +1,80 @@
+{
+  "query": "SELECT p.matchupId, p.pickedTeamId, gr.winnerId, t1.name as pickedTeam, t2.name as winnerTeam FROM picks p JOIN gameResults gr ON gr.matchupId = p.matchupId JOIN teams t1 ON t1.id = p.pickedTeamId LEFT JOIN teams t2 ON t2.id = gr.winnerId WHERE gr.isComplete = 1 LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute SELECT p.matchupId, p.pickedTeamId, gr.winnerId, t1.name as pickedTeam, t2.name as winnerTeam FROM picks p JOIN gameResults gr ON gr.matchupId = p.matchupId JOIN teams t1 ON t1.id = p.pickedTeamId LEFT JOIN teams t2 ON t2.id = gr.winnerId WHERE gr.isComplete = 1 LIMIT 10;",
+  "rows": [
+    {
+      "matchupId": "East-round64-0",
+      "pickedTeamId": "60001",
+      "winnerId": "60001",
+      "pickedTeam": "Duke Blue Devils",
+      "winnerTeam": "Duke Blue Devils"
+    },
+    {
+      "matchupId": "East-round64-0",
+      "pickedTeamId": "60001",
+      "winnerId": "60001",
+      "pickedTeam": "Duke Blue Devils",
+      "winnerTeam": "Duke Blue Devils"
+    },
+    {
+      "matchupId": "East-round64-0",
+      "pickedTeamId": "60001",
+      "winnerId": "60001",
+      "pickedTeam": "Duke Blue Devils",
+      "winnerTeam": "Duke Blue Devils"
+    },
+    {
+      "matchupId": "East-round64-0",
+      "pickedTeamId": "60001",
+      "winnerId": "60001",
+      "pickedTeam": "Duke Blue Devils",
+      "winnerTeam": "Duke Blue Devils"
+    },
+    {
+      "matchupId": "East-round64-0",
+      "pickedTeamId": "60001",
+      "winnerId": "60001",
+      "pickedTeam": "Duke Blue Devils",
+      "winnerTeam": "Duke Blue Devils"
+    },
+    {
+      "matchupId": "East-round64-0",
+      "pickedTeamId": "60001",
+      "winnerId": "60001",
+      "pickedTeam": "Duke Blue Devils",
+      "winnerTeam": "Duke Blue Devils"
+    },
+    {
+      "matchupId": "East-round64-0",
+      "pickedTeamId": "60001",
+      "winnerId": "60001",
+      "pickedTeam": "Duke Blue Devils",
+      "winnerTeam": "Duke Blue Devils"
+    },
+    {
+      "matchupId": "East-round64-7",
+      "pickedTeamId": "60002",
+      "winnerId": "60002",
+      "pickedTeam": "UConn Huskies",
+      "winnerTeam": "UConn Huskies"
+    },
+    {
+      "matchupId": "East-round64-7",
+      "pickedTeamId": "60002",
+      "winnerId": "60002",
+      "pickedTeam": "UConn Huskies",
+      "winnerTeam": "UConn Huskies"
+    },
+    {
+      "matchupId": "East-round64-7",
+      "pickedTeamId": "60002",
+      "winnerId": "60002",
+      "pickedTeam": "UConn Huskies",
+      "winnerTeam": "UConn Huskies"
+    }
+  ],
+  "messages": [],
+  "stdout": "matchupId\tpickedTeamId\twinnerId\tpickedTeam\twinnerTeam\nEast-round64-0\t60001\t60001\tDuke Blue Devils\tDuke Blue Devils\nEast-round64-0\t60001\t60001\tDuke Blue Devils\tDuke Blue Devils\nEast-round64-0\t60001\t60001\tDuke Blue Devils\tDuke Blue Devils\nEast-round64-0\t60001\t60001\tDuke Blue Devils\tDuke Blue Devils\nEast-round64-0\t60001\t60001\tDuke Blue Devils\tDuke Blue Devils\nEast-round64-0\t60001\t60001\tDuke Blue Devils\tDuke Blue Devils\nEast-round64-0\t60001\t60001\tDuke Blue Devils\tDuke Blue Devils\nEast-round64-7\t60002\t60002\tUConn Huskies\tUConn Huskies\nEast-round64-7\t60002\t60002\tUConn Huskies\tUConn Huskies\nEast-round64-7\t60002\t60002\tUConn Huskies\tUConn Huskies\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}

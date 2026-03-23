@@ -1,0 +1,151 @@
+{
+  "query": "\nSELECT DISTINCT matchupId FROM picks WHERE matchupId LIKE '%round32%' OR matchupId LIKE '%R2%' OR matchupId LIKE '%32%' LIMIT 20;\nSELECT DISTINCT matchupId FROM picks WHERE matchupId NOT LIKE 'FirstFour%' AND matchupId NOT LIKE '%round64%' LIMIT 30;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute \nSELECT DISTINCT matchupId FROM picks WHERE matchupId LIKE '%round32%' OR matchupId LIKE '%R2%' OR matchupId LIKE '%32%' LIMIT 20;\nSELECT DISTINCT matchupId FROM picks WHERE matchupId NOT LIKE 'FirstFour%' AND matchupId NOT LIKE '%round64%' LIMIT 30;\n",
+  "rows": [
+    {
+      "matchupId": "West-round32-3"
+    },
+    {
+      "matchupId": "Midwest-round32-0"
+    },
+    {
+      "matchupId": "South-round32-3"
+    },
+    {
+      "matchupId": "West-round32-0"
+    },
+    {
+      "matchupId": "Midwest-round32-1"
+    },
+    {
+      "matchupId": "West-round32-1"
+    },
+    {
+      "matchupId": "West-round32-2"
+    },
+    {
+      "matchupId": "Midwest-round32-2"
+    },
+    {
+      "matchupId": "East-round32-1"
+    },
+    {
+      "matchupId": "Midwest-round32-3"
+    },
+    {
+      "matchupId": "East-round32-0"
+    },
+    {
+      "matchupId": "South-round32-2"
+    },
+    {
+      "matchupId": "East-round32-3"
+    },
+    {
+      "matchupId": "South-round32-1"
+    },
+    {
+      "matchupId": "South-round32-0"
+    },
+    {
+      "matchupId": "East-round32-2"
+    },
+    {
+      "matchupId": "matchupId"
+    },
+    {
+      "matchupId": "Midwest-round32-3"
+    },
+    {
+      "matchupId": "East-round32-1"
+    },
+    {
+      "matchupId": "FinalFour-1"
+    },
+    {
+      "matchupId": "FinalFour-0"
+    },
+    {
+      "matchupId": "Midwest-sweet16-0"
+    },
+    {
+      "matchupId": "Midwest-sweet16-1"
+    },
+    {
+      "matchupId": "South-round32-1"
+    },
+    {
+      "matchupId": "East-round32-3"
+    },
+    {
+      "matchupId": "East-round32-0"
+    },
+    {
+      "matchupId": "South-round32-2"
+    },
+    {
+      "matchupId": "South-elite8-0"
+    },
+    {
+      "matchupId": "South-round32-0"
+    },
+    {
+      "matchupId": "East-round32-2"
+    },
+    {
+      "matchupId": "South-sweet16-1"
+    },
+    {
+      "matchupId": "West-elite8-0"
+    },
+    {
+      "matchupId": "Midwest-elite8-0"
+    },
+    {
+      "matchupId": "Championship-0"
+    },
+    {
+      "matchupId": "West-round32-2"
+    },
+    {
+      "matchupId": "West-round32-0"
+    },
+    {
+      "matchupId": "Midwest-round32-1"
+    },
+    {
+      "matchupId": "East-sweet16-1"
+    },
+    {
+      "matchupId": "West-round32-1"
+    },
+    {
+      "matchupId": "Midwest-round32-0"
+    },
+    {
+      "matchupId": "South-sweet16-0"
+    },
+    {
+      "matchupId": "South-round32-3"
+    },
+    {
+      "matchupId": "East-elite8-0"
+    },
+    {
+      "matchupId": "West-round32-3"
+    },
+    {
+      "matchupId": "West-sweet16-0"
+    },
+    {
+      "matchupId": "East-sweet16-0"
+    },
+    {
+      "matchupId": "West-sweet16-1"
+    }
+  ],
+  "messages": [],
+  "stdout": "matchupId\nWest-round32-3\nMidwest-round32-0\nSouth-round32-3\nWest-round32-0\nMidwest-round32-1\nWest-round32-1\nWest-round32-2\nMidwest-round32-2\nEast-round32-1\nMidwest-round32-3\nEast-round32-0\nSouth-round32-2\nEast-round32-3\nSouth-round32-1\nSouth-round32-0\nEast-round32-2\nmatchupId\nMidwest-round32-3\nEast-round32-1\nFinalFour-1\nFinalFour-0\nMidwest-sweet16-0\nMidwest-sweet16-1\nSouth-round32-1\nEast-round32-3\nEast-round32-0\nSouth-round32-2\nSouth-elite8-0\nSouth-round32-0\nEast-round32-2\nSouth-sweet16-1\nWest-elite8-0\nMidwest-elite8-0\nChampionship-0\nWest-round32-2\nWest-round32-0\nMidwest-round32-1\nEast-sweet16-1\nWest-round32-1\nMidwest-round32-0\nSouth-sweet16-0\nSouth-round32-3\nEast-elite8-0\nWest-round32-3\nWest-sweet16-0\nEast-sweet16-0\nWest-sweet16-1\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

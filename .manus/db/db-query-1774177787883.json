@@ -1,0 +1,13 @@
+{
+  "query": "\nSELECT COUNT(*) as unscored_picks FROM picks p JOIN gameResults gr ON gr.matchupId = p.matchupId WHERE gr.isComplete = 1 AND p.isCorrect IS NULL;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute \nSELECT COUNT(*) as unscored_picks FROM picks p JOIN gameResults gr ON gr.matchupId = p.matchupId WHERE gr.isComplete = 1 AND p.isCorrect IS NULL;\n",
+  "rows": [
+    {
+      "unscored_picks": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "unscored_picks\n0\n",
+  "stderr": "",
+  "execution_time_ms": 66
+}

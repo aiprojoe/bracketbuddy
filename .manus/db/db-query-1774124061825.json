@@ -1,0 +1,9 @@
+{
+  "query": "\nUPDATE picks SET isCorrect = 1, pointsEarned = 5, actualWinnerId = 60027 WHERE id = 300001 AND matchupId = 'FirstFour-0';\nUPDATE picks SET isCorrect = 0, pointsEarned = 0, actualWinnerId = 60006 WHERE id = 300004 AND matchupId = 'East-round64-4';\nUPDATE picks SET isCorrect = 1, pointsEarned = 10, actualWinnerId = 60056 WHERE id = 300028 AND matchupId = 'South-round64-2';\nUPDATE brackets SET totalPoints = totalPoints + 15, correctPicks = correctPicks + 2 WHERE id = 240001;\nUPDATE users SET totalPoints = totalPoints + 15 WHERE id = 1470049;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute \nUPDATE picks SET isCorrect = 1, pointsEarned = 5, actualWinnerId = 60027 WHERE id = 300001 AND matchupId = 'FirstFour-0';\nUPDATE picks SET isCorrect = 0, pointsEarned = 0, actualWinnerId = 60006 WHERE id = 300004 AND matchupId = 'East-round64-4';\nUPDATE picks SET isCorrect = 1, pointsEarned = 10, actualWinnerId = 60056 WHERE id = 300028 AND matchupId = 'South-round64-2';\nUPDATE brackets SET totalPoints = totalPoints + 15, correctPicks = correctPicks + 2 WHERE id = 240001;\nUPDATE users SET totalPoints = totalPoints + 15 WHERE id = 1470049;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 107
+}

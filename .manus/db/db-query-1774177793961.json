@@ -1,0 +1,27 @@
+{
+  "query": "\nSELECT COUNT(*) as total_games, SUM(isComplete) as completed_games, SUM(isScored) as scored_games FROM gameResults WHERE year = 2026;\nSELECT u.name, b.totalPoints, b.correctPicks, b.maxPossiblePoints FROM brackets b JOIN users u ON u.id = b.userId ORDER BY b.totalPoints DESC LIMIT 10;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute \nSELECT COUNT(*) as total_games, SUM(isComplete) as completed_games, SUM(isScored) as scored_games FROM gameResults WHERE year = 2026;\nSELECT u.name, b.totalPoints, b.correctPicks, b.maxPossiblePoints FROM brackets b JOIN users u ON u.id = b.userId ORDER BY b.totalPoints DESC LIMIT 10;\n",
+  "rows": [
+    {
+      "total_games": "53",
+      "completed_games": "39",
+      "scored_games": "39"
+    }
+  ],
+  "messages": [
+    "name\ttotalPoints\tcorrectPicks\tmaxPossiblePoints",
+    "Shannon Clark\t230\t22\t0",
+    "Steven Glamzi\t225\t21\t0",
+    "Rondog\t210\t19\t0",
+    "Mike McAdam\t195\t20\t0",
+    "Rhonda Herrando\t195\t19\t0",
+    "Joe McAdam\t190\t18\t0",
+    "Nathan Edelen\t155\t15\t0",
+    "Kathryn McAdam\t135\t13\t0",
+    "Natasha Y Brown\t45\t5\t0",
+    "Michael Clapper\t10\t2\t0"
+  ],
+  "stdout": "total_games\tcompleted_games\tscored_games\n53\t39\t39\nname\ttotalPoints\tcorrectPicks\tmaxPossiblePoints\nShannon Clark\t230\t22\t0\nSteven Glamzi\t225\t21\t0\nRondog\t210\t19\t0\nMike McAdam\t195\t20\t0\nRhonda Herrando\t195\t19\t0\nJoe McAdam\t190\t18\t0\nNathan Edelen\t155\t15\t0\nKathryn McAdam\t135\t13\t0\nNatasha Y Brown\t45\t5\t0\nMichael Clapper\t10\t2\t0\n",
+  "stderr": "",
+  "execution_time_ms": 78
+}

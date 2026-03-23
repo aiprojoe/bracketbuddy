@@ -1,0 +1,46 @@
+{
+  "query": "\nSELECT COUNT(*) as unscored FROM picks p JOIN gameResults gr ON gr.matchupId = p.matchupId WHERE gr.isComplete = 1 AND p.isCorrect IS NULL;\nSELECT u.name, b.totalPoints, b.correctPicks FROM brackets b JOIN users u ON u.id = b.userId ORDER BY b.totalPoints DESC LIMIT 10;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute \nSELECT COUNT(*) as unscored FROM picks p JOIN gameResults gr ON gr.matchupId = p.matchupId WHERE gr.isComplete = 1 AND p.isCorrect IS NULL;\nSELECT u.name, b.totalPoints, b.correctPicks FROM brackets b JOIN users u ON u.id = b.userId ORDER BY b.totalPoints DESC LIMIT 10;\n",
+  "rows": [
+    {
+      "unscored": "0"
+    },
+    {
+      "unscored": "name\ttotalPoints\tcorrectPicks"
+    },
+    {
+      "unscored": "Shannon Clark\t230\t22"
+    },
+    {
+      "unscored": "Steven Glamzi\t225\t21"
+    },
+    {
+      "unscored": "Rondog\t210\t19"
+    },
+    {
+      "unscored": "Mike McAdam\t195\t20"
+    },
+    {
+      "unscored": "Rhonda Herrando\t195\t19"
+    },
+    {
+      "unscored": "Joe McAdam\t190\t18"
+    },
+    {
+      "unscored": "Nathan Edelen\t155\t15"
+    },
+    {
+      "unscored": "Kathryn McAdam\t135\t13"
+    },
+    {
+      "unscored": "Natasha Y Brown\t45\t5"
+    },
+    {
+      "unscored": "Michael Clapper\t10\t2"
+    }
+  ],
+  "messages": [],
+  "stdout": "unscored\n0\nname\ttotalPoints\tcorrectPicks\nShannon Clark\t230\t22\nSteven Glamzi\t225\t21\nRondog\t210\t19\nMike McAdam\t195\t20\nRhonda Herrando\t195\t19\nJoe McAdam\t190\t18\nNathan Edelen\t155\t15\nKathryn McAdam\t135\t13\nNatasha Y Brown\t45\t5\nMichael Clapper\t10\t2\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

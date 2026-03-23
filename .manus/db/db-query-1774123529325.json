@@ -1,0 +1,370 @@
+{
+  "query": "SELECT matchupId, team1Id, team2Id, winnerId, isComplete, isScored, round FROM gameResults ORDER BY round, matchupId LIMIT 40;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute SELECT matchupId, team1Id, team2Id, winnerId, isComplete, isScored, round FROM gameResults ORDER BY round, matchupId LIMIT 40;",
+  "rows": [
+    {
+      "matchupId": "FirstFour-0",
+      "team1Id": "30159",
+      "team2Id": "30159",
+      "winnerId": "60027",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "firstfour"
+    },
+    {
+      "matchupId": "FirstFour-0",
+      "team1Id": "30159",
+      "team2Id": "30159",
+      "winnerId": "60027",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "firstfour"
+    },
+    {
+      "matchupId": "FirstFour-1",
+      "team1Id": "30176",
+      "team2Id": "30176",
+      "winnerId": "60067",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "firstfour"
+    },
+    {
+      "matchupId": "FirstFour-3",
+      "team1Id": "60051",
+      "team2Id": "60050",
+      "winnerId": "60051",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "firstfour"
+    },
+    {
+      "matchupId": "West-firstfour-16v16",
+      "team1Id": "60033",
+      "team2Id": "60033",
+      "winnerId": "60033",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "firstfour"
+    },
+    {
+      "matchupId": "East-round64-0",
+      "team1Id": "30143",
+      "team2Id": "30139",
+      "winnerId": "60001",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "East-round64-1",
+      "team1Id": "30144",
+      "team2Id": "30145",
+      "winnerId": "60009",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "East-round64-3",
+      "team1Id": "30148",
+      "team2Id": "30149",
+      "winnerId": "60004",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "East-round64-4",
+      "team1Id": "30150",
+      "team2Id": "30141",
+      "winnerId": "60006",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "East-round64-5",
+      "team1Id": "30151",
+      "team2Id": "30152",
+      "winnerId": "60003",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "East-round64-6",
+      "team1Id": "30153",
+      "team2Id": "30154",
+      "winnerId": "60007",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "East-round64-7",
+      "team1Id": "30155",
+      "team2Id": "30156",
+      "winnerId": "60002",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "East-round64-99",
+      "team1Id": "30181",
+      "team2Id": "30165",
+      "winnerId": "60005",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "South-round64-0",
+      "team1Id": "60052",
+      "team2Id": "60067",
+      "winnerId": "60052",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "South-round64-1",
+      "team1Id": "30177",
+      "team2Id": "30178",
+      "winnerId": "60060",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "South-round64-2",
+      "team1Id": "30179",
+      "team2Id": "30180",
+      "winnerId": "60056",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "South-round64-3",
+      "team1Id": "30181",
+      "team2Id": "30182",
+      "winnerId": "60055",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "South-round64-4",
+      "team1Id": "30183",
+      "team2Id": "30184",
+      "winnerId": "60062",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "South-round64-5",
+      "team1Id": "30185",
+      "team2Id": "30186",
+      "winnerId": "60054",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "South-round64-6",
+      "team1Id": "30187",
+      "team2Id": "30188",
+      "winnerId": "60061",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "South-round64-7",
+      "team1Id": "30189",
+      "team2Id": "30190",
+      "winnerId": "60053",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "West-round64-0",
+      "team1Id": "60017",
+      "team2Id": "60033",
+      "winnerId": "60017",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "West-round64-0",
+      "team1Id": "30161",
+      "team2Id": "30157",
+      "winnerId": "60017",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "West-round64-1",
+      "team1Id": "30162",
+      "team2Id": "30163",
+      "winnerId": "60025",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "West-round64-3",
+      "team1Id": "30166",
+      "team2Id": "30167",
+      "winnerId": "60020",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "West-round64-3",
+      "team1Id": "30166",
+      "team2Id": "30167",
+      "winnerId": "60020",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "West-round64-4",
+      "team1Id": "60022",
+      "team2Id": "60027",
+      "winnerId": "60022",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "West-round64-4",
+      "team1Id": "60022",
+      "team2Id": "60027",
+      "winnerId": "60027",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "West-round64-5",
+      "team1Id": "30169",
+      "team2Id": "30170",
+      "winnerId": "60019",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "West-round64-5",
+      "team1Id": "30169",
+      "team2Id": "30170",
+      "winnerId": "60019",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "West-round64-6",
+      "team1Id": "30171",
+      "team2Id": "30172",
+      "winnerId": "60023",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "West-round64-7",
+      "team1Id": "30173",
+      "team2Id": "30174",
+      "winnerId": "60018",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "West-round64-7",
+      "team1Id": "30173",
+      "team2Id": "30174",
+      "winnerId": "60018",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "West-round64-99",
+      "team1Id": "30193",
+      "team2Id": "30194",
+      "winnerId": "60025",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "West-round64-99",
+      "team1Id": "30187",
+      "team2Id": "30159",
+      "winnerId": "60023",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "West-round64-99",
+      "team1Id": "30164",
+      "team2Id": "30180",
+      "winnerId": "60029",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "West-round64-99",
+      "team1Id": "30142",
+      "team2Id": "30196",
+      "winnerId": "60021",
+      "isComplete": "1",
+      "isScored": "1",
+      "round": "round64"
+    },
+    {
+      "matchupId": "East-round32-1v9",
+      "team1Id": "60001",
+      "team2Id": "60009",
+      "winnerId": "NULL",
+      "isComplete": "0",
+      "isScored": "0",
+      "round": "round32"
+    },
+    {
+      "matchupId": "East-round32-2v7",
+      "team1Id": "60002",
+      "team2Id": "60007",
+      "winnerId": "NULL",
+      "isComplete": "0",
+      "isScored": "0",
+      "round": "round32"
+    },
+    {
+      "matchupId": "East-round32-3v6",
+      "team1Id": "60003",
+      "team2Id": "60006",
+      "winnerId": "NULL",
+      "isComplete": "0",
+      "isScored": "0",
+      "round": "round32"
+    }
+  ],
+  "messages": [],
+  "stdout": "matchupId\tteam1Id\tteam2Id\twinnerId\tisComplete\tisScored\tround\nFirstFour-0\t30159\t30159\t60027\t1\t1\tfirstfour\nFirstFour-0\t30159\t30159\t60027\t1\t1\tfirstfour\nFirstFour-1\t30176\t30176\t60067\t1\t1\tfirstfour\nFirstFour-3\t60051\t60050\t60051\t1\t1\tfirstfour\nWest-firstfour-16v16\t60033\t60033\t60033\t1\t1\tfirstfour\nEast-round64-0\t30143\t30139\t60001\t1\t1\tround64\nEast-round64-1\t30144\t30145\t60009\t1\t1\tround64\nEast-round64-3\t30148\t30149\t60004\t1\t1\tround64\nEast-round64-4\t30150\t30141\t60006\t1\t1\tround64\nEast-round64-5\t30151\t30152\t60003\t1\t1\tround64\nEast-round64-6\t30153\t30154\t60007\t1\t1\tround64\nEast-round64-7\t30155\t30156\t60002\t1\t1\tround64\nEast-round64-99\t30181\t30165\t60005\t1\t1\tround64\nSouth-round64-0\t60052\t60067\t60052\t1\t1\tround64\nSouth-round64-1\t30177\t30178\t60060\t1\t1\tround64\nSouth-round64-2\t30179\t30180\t60056\t1\t1\tround64\nSouth-round64-3\t30181\t30182\t60055\t1\t1\tround64\nSouth-round64-4\t30183\t30184\t60062\t1\t1\tround64\nSouth-round64-5\t30185\t30186\t60054\t1\t1\tround64\nSouth-round64-6\t30187\t30188\t60061\t1\t1\tround64\nSouth-round64-7\t30189\t30190\t60053\t1\t1\tround64\nWest-round64-0\t60017\t60033\t60017\t1\t1\tround64\nWest-round64-0\t30161\t30157\t60017\t1\t1\tround64\nWest-round64-1\t30162\t30163\t60025\t1\t1\tround64\nWest-round64-3\t30166\t30167\t60020\t1\t1\tround64\nWest-round64-3\t30166\t30167\t60020\t1\t1\tround64\nWest-round64-4\t60022\t60027\t60022\t1\t1\tround64\nWest-round64-4\t60022\t60027\t60027\t1\t1\tround64\nWest-round64-5\t30169\t30170\t60019\t1\t1\tround64\nWest-round64-5\t30169\t30170\t60019\t1\t1\tround64\nWest-round64-6\t30171\t30172\t60023\t1\t1\tround64\nWest-round64-7\t30173\t30174\t60018\t1\t1\tround64\nWest-round64-7\t30173\t30174\t60018\t1\t1\tround64\nWest-round64-99\t30193\t30194\t60025\t1\t1\tround64\nWest-round64-99\t30187\t30159\t60023\t1\t1\tround64\nWest-round64-99\t30164\t30180\t60029\t1\t1\tround64\nWest-round64-99\t30142\t30196\t60021\t1\t1\tround64\nEast-round32-1v9\t60001\t60009\tNULL\t0\t0\tround32\nEast-round32-2v7\t60002\t60007\tNULL\t0\t0\tround32\nEast-round32-3v6\t60003\t60006\tNULL\t0\t0\tround32\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

@@ -377,3 +377,30 @@
 - [x] Fix espnSync.ts buildMatchupId to generate FirstFour-N format matching picks table
 - [x] Fix gameResults DB: corrected matchupIds, removed phantom West-16 game, inserted Howard vs UMBC result
 - [x] Retroactively scored FirstFour-0 (Texas) and FirstFour-3 (Howard) picks
+
+## Sync Not Updating (March 19 - Round of 64)
+- [ ] Diagnose ESPN sync failure — check scheduler logs, DB game results, scoring engine
+- [ ] Fix root cause and trigger manual sync
+
+## Scoring Fix (March 21)
+- [ ] Fix maxPossiblePoints = 0 for all brackets (not being calculated)
+- [ ] Verify all 35 completed Round of 64 games have scored picks correctly
+- [ ] Re-run scoring for any missed picks
+
+## Leaderboard Stalled After 36 Games (March 22)
+- [ ] Diagnose why scoring stopped updating after 36 games
+- [ ] Fix root cause in ESPN sync / scoring pipeline
+- [ ] Retroactively score all missed picks for completed games
+- [ ] Verify leaderboard totals are correct
+
+## Missing Games (March 22 - Should be 44+ complete)
+- [ ] Identify why DB only shows 39 complete games when 44+ should be done
+- [ ] Force ESPN sync to pull missing Round of 64 / Round of 32 games
+- [ ] Score all picks for newly synced games
+- [ ] Update bracket totals and maxPossiblePoints
+
+## Claude's Leaderboard Scoring Fix (March 23)
+- [x] Merge Claude's PR: slot-based matchupId fix for R32/S16/E8 in espnSync.ts
+- [x] Auto-repair stale seed-based matchupIds on sync
+- [x] 107 picks retroactively scored after merge
+- [x] 50 games complete and syncing correctly

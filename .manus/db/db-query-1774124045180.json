@@ -1,0 +1,54 @@
+{
+  "query": "SELECT p.id, p.matchupId, p.pickedTeamId, p.bracketId, p.userId, gr.winnerId, gr.round, t1.name as pickedTeam, t2.name as winnerTeam FROM picks p JOIN gameResults gr ON gr.matchupId = p.matchupId LEFT JOIN teams t1 ON t1.id = p.pickedTeamId LEFT JOIN teams t2 ON t2.id = gr.winnerId WHERE gr.isComplete = 1 AND p.isCorrect IS NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute SELECT p.id, p.matchupId, p.pickedTeamId, p.bracketId, p.userId, gr.winnerId, gr.round, t1.name as pickedTeam, t2.name as winnerTeam FROM picks p JOIN gameResults gr ON gr.matchupId = p.matchupId LEFT JOIN teams t1 ON t1.id = p.pickedTeamId LEFT JOIN teams t2 ON t2.id = gr.winnerId WHERE gr.isComplete = 1 AND p.isCorrect IS NULL;",
+  "rows": [
+    {
+      "id": "300004",
+      "matchupId": "East-round64-4",
+      "pickedTeamId": "60011",
+      "bracketId": "240001",
+      "userId": "1470049",
+      "winnerId": "60006",
+      "round": "round64",
+      "pickedTeam": "South Florida Bulls",
+      "winnerTeam": "Louisville Cardinals"
+    },
+    {
+      "id": "300001",
+      "matchupId": "FirstFour-0",
+      "pickedTeamId": "60027",
+      "bracketId": "240001",
+      "userId": "1470049",
+      "winnerId": "60027",
+      "round": "firstfour",
+      "pickedTeam": "Texas Longhorns",
+      "winnerTeam": "Texas Longhorns"
+    },
+    {
+      "id": "300028",
+      "matchupId": "South-round64-2",
+      "pickedTeamId": "60056",
+      "bracketId": "240001",
+      "userId": "1470049",
+      "winnerId": "60056",
+      "round": "round64",
+      "pickedTeam": "Vanderbilt Commodores",
+      "winnerTeam": "Vanderbilt Commodores"
+    },
+    {
+      "id": "300001",
+      "matchupId": "FirstFour-0",
+      "pickedTeamId": "60027",
+      "bracketId": "240001",
+      "userId": "1470049",
+      "winnerId": "60027",
+      "round": "firstfour",
+      "pickedTeam": "Texas Longhorns",
+      "winnerTeam": "Texas Longhorns"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tmatchupId\tpickedTeamId\tbracketId\tuserId\twinnerId\tround\tpickedTeam\twinnerTeam\n300004\tEast-round64-4\t60011\t240001\t1470049\t60006\tround64\tSouth Florida Bulls\tLouisville Cardinals\n300001\tFirstFour-0\t60027\t240001\t1470049\t60027\tfirstfour\tTexas Longhorns\tTexas Longhorns\n300028\tSouth-round64-2\t60056\t240001\t1470049\t60056\tround64\tVanderbilt Commodores\tVanderbilt Commodores\n300001\tFirstFour-0\t60027\t240001\t1470049\t60027\tfirstfour\tTexas Longhorns\tTexas Longhorns\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

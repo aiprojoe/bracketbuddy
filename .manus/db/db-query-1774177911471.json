@@ -1,0 +1,90 @@
+{
+  "query": "\nSELECT gr.matchupId, gr.round, gr.isComplete, gr.isScored, gr.winnerId, t.name as winner,\n  COUNT(p.id) as pick_count, SUM(CASE WHEN p.isCorrect IS NOT NULL THEN 1 ELSE 0 END) as scored_picks\nFROM gameResults gr\nLEFT JOIN teams t ON t.id = gr.winnerId\nLEFT JOIN picks p ON p.matchupId = gr.matchupId\nWHERE gr.round = 'round32' AND gr.isComplete = 1\nGROUP BY gr.id, gr.matchupId, gr.round, gr.isComplete, gr.isScored, gr.winnerId, t.name\nORDER BY gr.matchupId;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2vdq17NkyrCgZT6.5c991c199988 --database 4984WQi92dnKhzDj2VyqyS --execute \nSELECT gr.matchupId, gr.round, gr.isComplete, gr.isScored, gr.winnerId, t.name as winner,\n  COUNT(p.id) as pick_count, SUM(CASE WHEN p.isCorrect IS NOT NULL THEN 1 ELSE 0 END) as scored_picks\nFROM gameResults gr\nLEFT JOIN teams t ON t.id = gr.winnerId\nLEFT JOIN picks p ON p.matchupId = gr.matchupId\nWHERE gr.round = 'round32' AND gr.isComplete = 1\nGROUP BY gr.id, gr.matchupId, gr.round, gr.isComplete, gr.isScored, gr.winnerId, t.name\nORDER BY gr.matchupId;\n",
+  "rows": [
+    {
+      "matchupId": "East-round32-1v9",
+      "round": "round32",
+      "isComplete": "1",
+      "isScored": "1",
+      "winnerId": "60001",
+      "winner": "Duke Blue Devils",
+      "pick_count": "0",
+      "scored_picks": "0"
+    },
+    {
+      "matchupId": "East-round32-3v6",
+      "round": "round32",
+      "isComplete": "1",
+      "isScored": "1",
+      "winnerId": "60003",
+      "winner": "Wisconsin Badgers",
+      "pick_count": "0",
+      "scored_picks": "0"
+    },
+    {
+      "matchupId": "South-round32-2v10",
+      "round": "round32",
+      "isComplete": "1",
+      "isScored": "1",
+      "winnerId": "60053",
+      "winner": "Tennessee Volunteers",
+      "pick_count": "0",
+      "scored_picks": "0"
+    },
+    {
+      "matchupId": "South-round32-3v11",
+      "round": "round32",
+      "isComplete": "1",
+      "isScored": "1",
+      "winnerId": "60054",
+      "winner": "Team S3",
+      "pick_count": "0",
+      "scored_picks": "0"
+    },
+    {
+      "matchupId": "South-round32-4v5",
+      "round": "round32",
+      "isComplete": "1",
+      "isScored": "1",
+      "winnerId": "60055",
+      "winner": "Team S4",
+      "pick_count": "0",
+      "scored_picks": "0"
+    },
+    {
+      "matchupId": "West-round32-1v9",
+      "round": "round32",
+      "isComplete": "1",
+      "isScored": "1",
+      "winnerId": "60017",
+      "winner": "Auburn Tigers",
+      "pick_count": "0",
+      "scored_picks": "0"
+    },
+    {
+      "matchupId": "West-round32-3v11",
+      "round": "round32",
+      "isComplete": "1",
+      "isScored": "1",
+      "winnerId": "60027",
+      "winner": "Team W11b",
+      "pick_count": "0",
+      "scored_picks": "0"
+    },
+    {
+      "matchupId": "West-round32-4v12",
+      "round": "round32",
+      "isComplete": "1",
+      "isScored": "1",
+      "winnerId": "60020",
+      "winner": "Team W4",
+      "pick_count": "0",
+      "scored_picks": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "matchupId\tround\tisComplete\tisScored\twinnerId\twinner\tpick_count\tscored_picks\nEast-round32-1v9\tround32\t1\t1\t60001\tDuke Blue Devils\t0\t0\nEast-round32-3v6\tround32\t1\t1\t60003\tWisconsin Badgers\t0\t0\nSouth-round32-2v10\tround32\t1\t1\t60053\tTennessee Volunteers\t0\t0\nSouth-round32-3v11\tround32\t1\t1\t60054\tTeam S3\t0\t0\nSouth-round32-4v5\tround32\t1\t1\t60055\tTeam S4\t0\t0\nWest-round32-1v9\tround32\t1\t1\t60017\tAuburn Tigers\t0\t0\nWest-round32-3v11\tround32\t1\t1\t60027\tTeam W11b\t0\t0\nWest-round32-4v12\tround32\t1\t1\t60020\tTeam W4\t0\t0\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}
