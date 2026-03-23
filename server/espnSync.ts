@@ -263,9 +263,21 @@ export async function syncEspnScores(year = 2026): Promise<SyncResult> {
       region: teams.region,
     }).from(teams);
   } catch (err) {
-    // Stale pool after hibernation — reset so next call gets a fresh connection
+    // Stale pool after hibernation — reset and retry once with a fresh connection
     resetDb();
-    return { ...result, errors: [`DB connection error (will retry): ${err}`] };
+    try {
+      await new Promise(resolve => setTimeout(resolve, 3000)); // wait 3s for pool to settle
+      const freshDb = await getDb();
+      dbTeams = await freshDb!.select({
+        id: teams.id,
+        name: teams.name,
+        shortName: teams.shortName,
+        seed: teams.seed,
+        region: teams.region,
+      }).from(teams);
+    } catch (retryErr) {
+      return { ...result, errors: [`DB connection error (will retry next run): ${retryErr}`] };
+    }
   }
 
   // Determine which dates to fetch (today ± 1 day + all tournament dates)
