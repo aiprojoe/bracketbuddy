@@ -176,6 +176,16 @@ function matchTeam(
 /**
  * Generate our internal matchupId from round, region, and seeds.
  * Must match the format used in Bracket.tsx / bracketData.ts and picks table.
+ *
+ * The frontend (Bracket.tsx) always uses slot-based IDs:
+ *   round64:  ${region}-round64-${slotIndex}    (0-7 per region)
+ *   round32:  ${region}-round32-${slotIndex}    (0-3 per region)
+ *   sweet16:  ${region}-sweet16-${slotIndex}    (0-1 per region)
+ *   elite8:   ${region}-elite8-0               (always 0 per region)
+ *   finalfour: FinalFour-0 (East vs West) or FinalFour-1 (South vs Midwest)
+ *   championship: Championship-0
+ *
+ * Slot indices are derived from the seed pair order in SEED_PAIRS_R64.
  */
 // Maps ESPN firstfour games to the same matchupId format the frontend/picks use.
 // Order matches FIRST_FOUR_MATCHUPS in shared/bracketData.ts:
@@ -187,6 +197,18 @@ const FIRST_FOUR_MAP: Record<string, string> = {
   "Midwest-16": "FirstFour-3",
 };
 
+// Seed pair order for Round of 64 — index = slot number used in matchupId
+const SEED_PAIRS_R64 = [[1,16],[8,9],[5,12],[4,13],[6,11],[3,14],[7,10],[2,15]];
+
+/**
+ * Returns the Round of 64 slot index (0-7) for a given seed.
+ * This is the bracket position that determines all later-round slot indices too.
+ * Returns -1 if the seed is not found (e.g. ESPN returned seed=0).
+ */
+function getSeedR64Slot(seed: number): number {
+  return SEED_PAIRS_R64.findIndex(([s1, s2]) => s1 === seed || s2 === seed);
+}
+
 function buildMatchupId(round: string, region: string | null, seed1: number, seed2: number): string {
   if (round === "firstfour") {
     // Use the same matchupId as the frontend picks (FirstFour-0..3)
@@ -195,15 +217,16 @@ function buildMatchupId(round: string, region: string | null, seed1: number, see
   }
   if (round === "finalfour") {
     // Final Four: East vs West = slot 0, South vs Midwest = slot 1
+    // region is typically null for National Semifinal games in ESPN notes,
+    // so the caller should pass the team's original bracket region as a fallback.
     if (region === "East" || region === "West") return "FinalFour-0";
-    return "FinalFour-1";
+    if (region === "South" || region === "Midwest") return "FinalFour-1";
+    // If region is still unknown, default to FinalFour-0 (will be corrected by
+    // the isCorrect IS NULL guard preventing double-scoring)
+    return "FinalFour-0";
   }
   if (round === "championship") return "Championship-0";
   if (!region) return `Unknown-${round}-${seed1}v${seed2}`;
-
-  // For regional rounds, use seed pair to determine slot index
-  // SEED_PAIRS_R64: [1,16],[8,9],[5,12],[4,13],[6,11],[3,14],[7,10],[2,15]
-  const SEED_PAIRS_R64 = [[1,16],[8,9],[5,12],[4,13],[6,11],[3,14],[7,10],[2,15]];
 
   if (round === "round64") {
     const idx = SEED_PAIRS_R64.findIndex(
@@ -212,11 +235,31 @@ function buildMatchupId(round: string, region: string | null, seed1: number, see
     return `${region}-round64-${idx >= 0 ? idx : seed1}`;
   }
 
-  // For later rounds we can't easily reconstruct the slot from seeds alone
-  // Use a seed-based key that's stable
-  const minSeed = Math.min(seed1, seed2);
-  const maxSeed = Math.max(seed1, seed2);
-  return `${region}-${round}-${minSeed}v${maxSeed}`;
+  // For round32, sweet16, elite8: derive the slot index from each team's R64
+  // bracket position so it matches the frontend's slot-based matchupId format.
+  // The slot is determined by which "branch" of the bracket the seeds came from:
+  //   R32 slot  = floor(min_r64_slot / 2)   → 0-3
+  //   S16 slot  = floor(min_r64_slot / 4)   → 0-1
+  //   E8  slot  = 0                          → always 0 per region
+  const r64Slot1 = getSeedR64Slot(seed1);
+  const r64Slot2 = getSeedR64Slot(seed2);
+
+  // If seeds are unknown (0 from ESPN), fall back to seed-based key so existing
+  // manually-inserted gameResults with that format still work.
+  if (r64Slot1 < 0 || r64Slot2 < 0) {
+    const minSeed = Math.min(seed1, seed2);
+    const maxSeed = Math.max(seed1, seed2);
+    return `${region}-${round}-${minSeed}v${maxSeed}`;
+  }
+
+  const minR64Slot = Math.min(r64Slot1, r64Slot2);
+
+  if (round === "round32") return `${region}-round32-${Math.floor(minR64Slot / 2)}`;
+  if (round === "sweet16")  return `${region}-sweet16-${Math.floor(minR64Slot / 4)}`;
+  if (round === "elite8")   return `${region}-elite8-0`;
+
+  // Unknown round — return a recognisable but non-matching key
+  return `Unknown-${round}-${seed1}v${seed2}`;
 }
 
 // ─── Points Calculation ───────────────────────────────────────────────────────
@@ -335,11 +378,17 @@ export async function syncEspnScores(year = 2026): Promise<SyncResult> {
         ? (game.team1IsWinner ? team1DbId : game.team2IsWinner ? team2DbId : null)
         : null;
 
-      const matchupId = buildMatchupId(game.round, game.region, game.team1Seed, game.team2Seed);
+      // For Final Four games ESPN notes don't include a region ("National Semifinal"),
+      // so game.region is null. Fall back to team1's original bracket region so
+      // buildMatchupId can correctly distinguish FinalFour-0 (East/West) from
+      // FinalFour-1 (South/Midwest).
+      const effectiveRegion = game.region ?? dbTeams.find((t) => t.id === team1DbId)?.region ?? null;
+
+      const matchupId = buildMatchupId(game.round, effectiveRegion, game.team1Seed, game.team2Seed);
 
       // Check if game already exists
       const existing = await db
-        .select({ id: gameResults.id, isScored: gameResults.isScored, isComplete: gameResults.isComplete })
+        .select({ id: gameResults.id, matchupId: gameResults.matchupId, isScored: gameResults.isScored, isComplete: gameResults.isComplete })
         .from(gameResults)
         .where(eq(gameResults.espnGameId, game.espnGameId))
         .limit(1);
@@ -355,6 +404,14 @@ export async function syncEspnScores(year = 2026): Promise<SyncResult> {
           team2Score: game.team2Score ?? undefined,
           playedAt: game.playedAt ?? undefined,
         }).where(eq(gameResults.espnGameId, game.espnGameId));
+
+        // If ESPN sync previously stored an old seed-based matchupId (e.g. "East-round32-1v9")
+        // but we now compute a slot-based one (e.g. "East-round32-0"), fix it in the DB
+        // and reset isScored so picks get re-evaluated against the corrected ID.
+        if (existingGame.matchupId !== undefined && existingGame.matchupId !== matchupId) {
+          await db.update(gameResults).set({ matchupId, isScored: false }).where(eq(gameResults.id, existingGame.id));
+          existingGame.isScored = false;
+        }
 
         // Score picks if game just completed and not yet scored
         if (game.isComplete && winnerId && !existingGame.isScored) {
